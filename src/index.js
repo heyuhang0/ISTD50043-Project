@@ -1,17 +1,21 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import Loading from './components/Loading/Loading';
 
-ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-  document.getElementById('root')
-);
+const Home = lazy(() => import('./pages/home/home'));
+const Search = lazy(() => import('./pages/search/search'));
+const Book = lazy(() => import('./pages/book/book'));
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+
+ReactDOM.render((
+  <Router>
+    <Suspense fallback={<Loading />}>
+      <Switch>
+        <Route exact path="/" component={Home} />
+        <Route path="/search" component={Search} />
+        <Route path="/book/:asin" component={Book} />
+      </Switch>
+    </Suspense>
+  </Router>
+), document.getElementById('root'))

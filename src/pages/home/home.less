@@ -1,0 +1,44 @@
+@import '~antd/dist/antd.less';
+
+.home {
+  .home-header {
+    background-image: url("./assets/background.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  
+    height: 400px;
+    transition: height 0.5s, padding 0.5s;
+    @media (max-width: 767px) {
+      height: 250px;
+      padding-left: 20px;
+      padding-right: 20px;
+    }
+  
+    .search-box {
+      max-width: @max-width * 0.6;
+  
+      margin: 80px auto 0 auto;
+      transition: margin-top 0.5s;
+      @media (max-width: 767px) {
+        margin-top: 40px;
+      }
+    }
+  }
+
+  .home-content {
+    background-color: white;
+    padding-top: 20px;
+    padding-bottom: 40px;
+  
+    .cards-row {
+      max-width: @max-width;
+      margin: 20px auto;
+
+      .ant-card {
+        margin: 0 10px 20px 10px;
+      }
+    }
+  }
+}
+

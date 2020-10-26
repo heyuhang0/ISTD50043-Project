@@ -1,0 +1,45 @@
+@import '~antd/dist/antd.less';
+
+.books-card .ant-card-body {
+  padding-top: 5px;
+  padding-bottom: 5px;
+
+  @cover-width: 60px;
+
+  .book-item {
+    .book-cover {
+      float: left;
+      width: @cover-width;
+      display: block;
+      img {
+        width: 100%;
+      }
+    }
+  
+    .book-content {
+      margin-left: @cover-width + 15px;
+      .title h4 {
+        margin-bottom: 0;
+      }
+      .author {
+        margin-bottom: 5px;
+        color: @text-color-secondary;
+        a {
+          color: @text-color-secondary;
+          &:hover {
+            color: @primary-color;
+          }
+        }
+      }
+      .ant-rate {
+        transform: scale(0.7);
+        margin-left: -20px;
+        margin-right: -12px;
+        color: @primary-color;
+      }
+      .rate-num {
+        color: @primary-color;
+      }
+    }
+  }
+}
