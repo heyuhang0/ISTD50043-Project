@@ -23,7 +23,7 @@ cp -r ./build /var/www/html
 
 # Start backend
 NODE_LOG_DIR="/var/log/nodejs"
-pm2 delete all
+pm2 delete all || true
 pm2 start ./src/api/index.js -i max -e $NODE_LOG_DIR/err.log -o $NODE_LOG_DIR/out.log
 
 # Setup Nginx forward
@@ -40,6 +40,6 @@ echo "server {
         proxy_pass http://127.0.0.1:8080;
     }
 }" > /etc/nginx/sites-available/default
-nginx -s stop
+nginx -s stop || true
 nginx
 nginx -s reload
