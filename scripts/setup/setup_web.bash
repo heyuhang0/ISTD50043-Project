@@ -7,6 +7,8 @@ if [ `id -u` -ne 0 ]; then
 	exit 1
 fi
 
+set -e
+
 # Go to project base directory
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd $(dirname $(dirname $DIR))

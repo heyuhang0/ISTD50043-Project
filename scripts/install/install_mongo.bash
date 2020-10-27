@@ -5,7 +5,7 @@ if [ `id -u` -ne 0 ]; then
 	exit 1
 fi
 
-set -v
+set -e
 
 wget -qO - https://www.mongodb.org/static/pgp/server-4.4.asc | sudo apt-key add -
 . /etc/os-release
