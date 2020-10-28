@@ -6,7 +6,7 @@ var router = express.Router();
 var mockBooks = [
   {
     asin: "B00A287PG2",
-    title: "To Kill a Mockingbird",
+    title: "Hello World",
     author: "Harper Lee",
     imUrl: "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1553383690l/2657.jpg",
     rating: 4.28,
