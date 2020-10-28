@@ -28,7 +28,7 @@ jobs:
 #     - run: npm test
 
   CD:
-    runs-on: buntu-latest
+    runs-on: ubuntu-latest
     needs: [CI]
 
     steps:
