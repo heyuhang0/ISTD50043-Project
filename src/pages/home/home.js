@@ -15,7 +15,6 @@ class Home extends React.Component {
     return (
       <Layout className="home">
         <Header className="home-header">
-          <h1>This is deployed by GitHub Action</h1>
           <SearchBox history={this.props.history}/>
         </Header>
         <Content className="home-content">
