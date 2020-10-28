@@ -7,5 +7,4 @@ fi
 
 set -e
 
-apt update -y
-apt install -y python3 mongodb-org
+apt update -y && apt install -y python3 mongodb-org

@@ -7,7 +7,6 @@ fi
 
 set -e
 
-apt update -y
-apt install -y python3 nodejs npm nginx
+apt update -y && apt install -y python3 nodejs npm nginx
 
-npm install -g pm2
+npm install -g pm2 --loglevel warn

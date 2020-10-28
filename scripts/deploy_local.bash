@@ -14,7 +14,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd $(dirname $DIR)
 
 # Install npm dependencies
-npm install
+npm install --loglevel warn
 
 # Build frontend and move to nginx html folder
 npm run build

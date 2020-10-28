@@ -6,6 +6,7 @@ import hashlib
 import logging
 import threading
 import argparse
+import subprocess
 import paramiko
 import boto3
 
@@ -153,12 +154,18 @@ def log_channels(logger, stdout, stderr):
             if not line:
                 break
             logger_func(line.rstrip())
-    t_out = threading.Thread(target=channel_logger, args=(logger.info, stdout))
-    t_err = threading.Thread(target=channel_logger, args=(logger.error, stderr))
-    t_out.start()
+    t_err = threading.Thread(target=channel_logger, args=(logger.warning, stderr))
     t_err.start()
-    t_out.join()
-    t_err.join()
+    try:
+        channel_logger(logger.info, stdout)
+        t_err.join()
+    except KeyboardInterrupt:
+        stderr.close()
+        raise
+
+
+def command_to_convert_CRLF(filename):
+    return 'ex -bsc \'%!awk "{sub(/\\r/,\\"\\")}1"\' -cx ' + filename
 
 
 def connect_or_setup_instance(app_name, username, ssh_key, instance_config):
@@ -170,7 +177,7 @@ def connect_or_setup_instance(app_name, username, ssh_key, instance_config):
     if len(instances) > 0:
         logger.info('Found existing instance')
         instance_ip = instances[0]['PublicIpAddress']
-        return ssh_connect_with_retry(instance_ip, username, ssh_key)
+        return ssh_connect_with_retry(instance_ip, username, ssh_key), instance_ip
 
     # Create a new instance with given config
     logger.info('Creating a new instance...')
@@ -190,17 +197,22 @@ def connect_or_setup_instance(app_name, username, ssh_key, instance_config):
     sftp.put(setup_script, remote_path)
     sftp.close()
 
-    logger.info(f'Running {setup_script} on the new instance:')
-    _, stdout, stderr = ssh.exec_command(f'chmod +x {remote_path} && sudo {remote_path}')
-    log_channels(logging.getLogger(instance_ip), stdout, stderr)
+    logger.info(f'Running {os.path.basename(setup_script)} on the new instance:')
+    _, stdout, stderr = ssh.exec_command(' && '.join([
+        command_to_convert_CRLF(remote_path),
+        f'chmod +x {remote_path}',
+        f'sudo {remote_path}'
+    ]))
+    log_channels(logging.getLogger(f'@{app_name}'), stdout, stderr)
 
-    return ssh
+    return ssh, instance_ip
 
 
 def main():
     logging.basicConfig(
-        format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-        level=logging.INFO
+        level=logging.INFO,
+        format='%(asctime)s.%(msecs)03d  %(name)-12s %(levelname)-8s %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S'
     )
 
     parser = argparse.ArgumentParser()
@@ -212,10 +224,12 @@ def main():
 
     key_name, ssh_key = args.keyfile or args.key or args.new_key_path
 
+    project_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
     app_name = 'web-server'
     instance_config = {
         'image_id': get_latest_ubuntu_focal_ami(),
-        'instance_type': 't2.micro',
+        'instance_type': 't2.small',
         'disk_size': 8,
         'ip_permissions': [
             {
@@ -232,16 +246,39 @@ def main():
             }
         ],
         'key_name': key_name,
-        'setup_script': os.path.join(
-            os.path.dirname(__file__), 'setup', 'setup_web.bash')
+        'setup_script': os.path.join(project_dir, 'scripts', 'setup', 'setup_web.bash')
     }
 
-    ssh = connect_or_setup_instance(app_name, 'ubuntu', ssh_key, instance_config)
+    ssh, instance_ip = connect_or_setup_instance(app_name, 'ubuntu', ssh_key, instance_config)
 
-    _, stdout, stderr = ssh.exec_command('npm help')
-    log_channels(logger, stdout, stderr)
+    archive_path = os.path.join(project_dir, 'temp_archive.tar.gz')
+    remote_path = 'app.tar.gz'
+    p = subprocess.Popen(['git', 'archive', '-o', archive_path, 'HEAD'], cwd=project_dir)
+    p.wait()
+    if p.returncode != 0:
+        logger.critical(f'Failed to create project archive: {p.stderr}')
+        exit(1)
 
+    sftp = ssh.open_sftp()
+    sftp.put(archive_path, remote_path)
+    sftp.close()
+    os.remove(archive_path)
+
+    logger.info('Deploying... This could takes a few minutes')
+    deploy_script = './scripts/deploy_local.bash'
+    _, stdout, stderr = ssh.exec_command(' && '.join([
+        'rm -rf app',
+        'mkdir app',
+        f'tar -xf {remote_path} -C app',
+        'cd ./app',
+        command_to_convert_CRLF(deploy_script),
+        f'chmod +x {deploy_script}',
+        f'sudo {deploy_script}'
+    ]))
+    log_channels(logging.getLogger(f'@{app_name}'), stdout, stderr)
     ssh.close()
+
+    logger.info(f'Done! You can now access http://{instance_ip}')
 
 
 if __name__ == "__main__":
