@@ -267,7 +267,7 @@ def main():
     logger.info('Deploying... This could takes a few minutes')
     deploy_script = './scripts/deploy_local.bash'
     _, stdout, stderr = ssh.exec_command(' && '.join([
-        'rm -rf app',
+        'sudo rm -rf app',
         'mkdir app',
         f'tar -xf {remote_path} -C app',
         'cd ./app',

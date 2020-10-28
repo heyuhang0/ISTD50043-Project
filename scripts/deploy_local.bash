@@ -24,6 +24,7 @@ cp -r ./build /var/www/html
 # Start backend
 NODE_LOG_DIR="/var/log/nodejs"
 pm2 delete all || true
+pm2 kill || true
 pm2 start ./src/api/index.js -i max -e $NODE_LOG_DIR/err.log -o $NODE_LOG_DIR/out.log
 
 # Setup Nginx forward
