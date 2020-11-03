@@ -27,7 +27,7 @@
   },
   "scripts": {
     "client": "craco start",
-    "server": "nodemon src/api/index.js",
+    "server": "nodemon src/app.js",
     "start": "concurrently -n client,server \"npm run client\" \"npm run server\"",
     "build": "craco build",
     "test": "craco test"

@@ -13,7 +13,6 @@ exports.review_for_a_book_get = function(req, res, next) {
       'for book ASIN=' + bookASIN,
       'with limit=' + limit,
       'and offset=' + offset);
-    console.log(mockReviews)
     res.json({
         reviews: mockReviews, user_review_id: null
     });
