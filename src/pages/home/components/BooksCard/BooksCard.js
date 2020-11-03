@@ -42,7 +42,7 @@ class BooksCard extends React.Component {
   componentDidMount() {
     axios.get(this.props.url).then((res) => {
       this.setState({
-        books: res.data,
+        books: res.data.books,
         loading: false
       });
     });
