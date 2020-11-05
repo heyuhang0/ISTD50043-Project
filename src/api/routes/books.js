@@ -10,7 +10,8 @@ var mockBooks = [
     author: "Harper Lee",
     imUrl: "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1553383690l/2657.jpg",
     rating: 4.28,
-    ratingCount: 4498763
+    ratingCount: 4498763,
+    description: "This is an interesting book"
   },
   {
     asin: "B008S38QHU",
@@ -42,7 +43,8 @@ var mockBooks = [
     author: "George Orwell",
     imUrl: "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1325861570i/170448._SY475_.jpg",
     rating: 3.95,
-    ratingCount: 2739074
+    ratingCount: 2739074,
+    description: "Animal Farm is ironic."
   }
 ];
 
@@ -77,6 +79,11 @@ router.get('/:asin', function (req, res, next) {
 
   res.json(mockBooks[0]);
 });
+
+router.get('/:asin/recommendations', function (req, res, next) {
+  let bookASIN = req.params.asin;
+  res.json(mockBooks);
+})
 
 router.use('/:asin/reviews', reviewsRouter);
 
