@@ -1,23 +1,12 @@
 var express = require('express');
 var router = express.Router();
 
-router.get('/tree', function (req, res, next) {
-  res.json({});
-});
+var categoryController = require('../controllers/categoryController');
 
-var mockCategoriesSuggestions = [
-  "Art",
-  "Biography",
-  "Business",
-  "Children's",
-  "Christian",
-  "Classics",
-  "Comics",
-  "Cookbooks"
-];
+// get all categories
+router.get('/tree', categoryController.all_categories_get);
 
-router.get('/suggested', function (req, res, next) {
-  res.json(mockCategoriesSuggestions);
-});
+// get suggested categories
+router.get('/suggested', categoryController.suggested_categories_get);
 
 module.exports = router;
