@@ -18,7 +18,7 @@ class SearchBox extends React.Component {
 
   componentDidMount() {
     axios.get("/api/categories/suggested").then((res) => {
-      this.setState({ suggestions: res.data });
+      this.setState({ suggestions: res.data.categories });
     });
   }
 
