@@ -15,6 +15,10 @@ function LoginForm(props) {
             required: true,
             message: 'Please input your email address!',
           },
+          {
+            type: "email",
+            message: 'Please input a valid email address!',
+          }
         ]}
       >
         <Input placeholder="Email address" />
