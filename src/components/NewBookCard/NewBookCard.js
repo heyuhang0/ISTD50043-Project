@@ -3,13 +3,6 @@ import { Card, Button, Modal, Form, Input, Select, InputNumber, Row, Col } from 
 import { PlusOutlined } from '@ant-design/icons';
 import axios from 'axios';
 
-
-// title
-// author
-// description
-// image url
-// price ($)
-// categories
 const { TextArea } = Input;
 const { Option } = Select;
 
