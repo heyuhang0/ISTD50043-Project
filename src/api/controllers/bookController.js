@@ -39,12 +39,12 @@ exports.book_search_get = function (req, res) {
 
 // testing for find books
 exports.book_find_by_price = function(req, res){
-    var price = req.query.price;
+    var price = parseFloat(req.query.price);
     var q = Book.find({'price':price}).limit(5);
     q.exec(function(err, book){
         res.json(book);
         console.log(book);
-        console.log("Test Successful!");
+        console.log(book.length+" result(s) found!");
     });
 }
 
