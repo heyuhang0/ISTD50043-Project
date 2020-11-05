@@ -36,3 +36,7 @@ app.use(function(err, req, res, next) {
 app.listen(port, () => {
   console.log(`Listening on port ${port}!`);
 });
+
+//synchronize with sql
+const db = require("./model.reviews.js");
+db.sequelize.sync();

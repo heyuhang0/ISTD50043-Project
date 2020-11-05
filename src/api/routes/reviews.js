@@ -12,8 +12,6 @@ router.post('/', reviewController.review_create_post);
 // delete own review
 router.delete('/:reviewid', reviewController.review_delete_post);
 
-// update own review
-router.put('/:reviewid', reviewController.review_delete_post);
 
 // upvote other's review
 router.post('/:reviewid/upvote', reviewController.review_upvote_post);
