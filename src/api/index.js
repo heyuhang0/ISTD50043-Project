@@ -2,7 +2,7 @@ var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+var mongooseMorgan = require('mongoose-morgan');
 
 var booksRouter = require('./routes/books');
 var categoriesRouter = require('./routes/categories');
@@ -10,7 +10,11 @@ var categoriesRouter = require('./routes/categories');
 var app = express();
 var port = process.env.PORT || 8080;
 
-app.use(logger('dev'));
+app.use(mongooseMorgan({    
+  connectionString: "mongodb+srv://zilin_wang:database@cluster0-zcgfy.gcp.mongodb.net/test?retryWrites=true&w=majority"
+ }, {}, 'short'
+));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
