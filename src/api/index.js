@@ -7,6 +7,8 @@ var logger = require('morgan');
 var booksRouter = require('./routes/books');
 var categoriesRouter = require('./routes/categories');
 
+var mongo = require('./mongo_server');
+
 var app = express();
 var port = process.env.PORT || 8080;
 
@@ -36,3 +38,5 @@ app.use(function(err, req, res, next) {
 app.listen(port, () => {
   console.log(`Listening on port ${port}!`);
 });
+
+mongo.connect();
