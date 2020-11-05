@@ -13,11 +13,11 @@ function LoginForm(props) {
         rules={[
           {
             required: true,
-            message: 'Please input your email address!',
+            message: 'Please input your email address',
           },
           {
             type: "email",
-            message: 'Please input a valid email address!',
+            message: 'Please input a valid email address',
           }
         ]}
       >
@@ -29,7 +29,7 @@ function LoginForm(props) {
         rules={[
           {
             required: true,
-            message: 'Please input your password!',
+            message: 'Please input your password',
           },
         ]}
       >
