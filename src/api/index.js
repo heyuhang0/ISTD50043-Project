@@ -1,3 +1,4 @@
+require('dotenv').config()
 var createError = require('http-errors');
 var express = require('express');
 var path = require('path');
@@ -11,7 +12,7 @@ var app = express();
 var port = process.env.PORT || 8080;
 
 app.use(mongooseMorgan({    
-  connectionString: "mongodb+srv://zilin_wang:database@cluster0-zcgfy.gcp.mongodb.net/test?retryWrites=true&w=majority"
+  connectionString: process.env.MONGODB_URL
  }, {}, 'short'
 ));
 
