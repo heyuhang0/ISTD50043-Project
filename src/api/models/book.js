@@ -11,7 +11,7 @@ const BookSchema = new Schema({
         required: [true, "'author' field required"]
     },
     price: {
-        type: String,
+        type: Number,
         required: [true, "'price' field required"]
     },
     categories: {
@@ -29,6 +29,18 @@ const BookSchema = new Schema({
     }, 
     related: [String],
     rank: Number, 
+    review_number: {
+        type: String,
+        default: "0"    
+    }, 
+    rating_average: {
+        type: String, 
+        default: "0"
+    }, 
+    rating_total:{
+        type: String, 
+        default: "0"
+    } 
 });
 
 const Book = mongoose.model('books', BookSchema);

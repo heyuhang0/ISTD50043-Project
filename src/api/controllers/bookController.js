@@ -1,7 +1,6 @@
 
 mockdata = require('../helpers/mockdata');
-const { off } = require('../models/book');
-var Book = require('../models/book');
+const Book = require('../models/book');
 
 var mockBooks = mockdata.mockBooks
 
@@ -28,7 +27,8 @@ exports.book_search_get = function (req, res) {
         return;
     }
     list_of_keyword.forEach(function(value, index, array){
-        keywords_for_find.push({"$or": [{'author':value}, {'title': {"$regex": " "+value, "$options": "i"}}, {'title': {"$regex": value+" ", "$options": "i"}}]});
+        keywords_for_find.push({"$or": [{'author':{"$regex":" "+value, "$options": "i"}}, {'author':{"$regex":value+" ", "$options": "i"}},
+         {'title': {"$regex": " "+value, "$options": "i"}}, {'title': {"$regex": value+" ", "$options": "i"}}]});
     });
     Book.find({"$and": keywords_for_find}).limit(parseInt(limit)).skip(parseInt(limit)*parseInt(offset)).exec(function(err, books){
         console.log(books.length + " result(s) found!");
@@ -39,12 +39,12 @@ exports.book_search_get = function (req, res) {
 
 // testing for find books
 exports.book_find_by_price = function(req, res){
-    var price = req.query.price;
+    var price = parseFloat(req.query.price);
     var q = Book.find({'price':price}).limit(5);
     q.exec(function(err, book){
         res.json(book);
         console.log(book);
-        console.log("Test Successful!");
+        console.log(book.length+" result(s) found!");
     });
 }
 
