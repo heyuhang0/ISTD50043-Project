@@ -1,6 +1,8 @@
 
 mockdata = require('../helpers/mockdata');
 const Book = require('../models/book');
+var Category = require('../models/category');
+var async = require('async')
 
 var mockBooks = mockdata.mockBooks
 
@@ -87,4 +89,92 @@ exports.book_create_post = function (req, res) {
         }
     });
     // res.send('NOT IMPLEMENTED: Book create POST');
+};
+
+
+// Get books in a category
+exports.book_category_get = function (req, res) {
+    let category = req.params.category;
+    let limit = Number(req.query.limit) || 20;
+    let offset = Number(req.query.offset) || 0;
+    console.log(
+        'Searching for category with',
+        'keyword=' + category,
+        'limit=' + limit,
+        'offset=' + offset
+    );
+
+    // each page > 100 records
+    if (limit > 100) {
+        res.status(400)
+            .send({
+                success: 0,
+                error_type: 1,
+                error_msg: "limit must less than 100"
+            });
+        return;
+    };
+
+    // > 1000 records
+    if (offset + limit > 1000) {
+        console.log((offset + 1) * limit);
+        console.log(offset, limit)
+        res.status(400)
+            .send({
+                success: 0,
+                error_type: 2,
+                error_msg: "exceeding max search limit",
+            });
+        return;
+    };
+
+    async.waterfall([
+        function (callback) {
+            Category.findOne({ category: category })
+                .exec(function (err, category_found) {
+                    callback(err, category_found)
+                });
+        },
+        function (category_found, callback) {
+            console.log(category_found)
+            if (!category_found) {
+                console.log("no such category")
+                callback(null, null)
+            } else {
+                console.log(category_found.category);
+                Book.find({ category: category_found.category })
+                    .skip(offset)
+                    .sort({ rating_total: -1 })
+                    .limit(limit)
+                    .exec(function (err, list_books) {
+                        callback(err, list_books)
+                    });
+            }
+        }
+    ], function (err, list_books) {
+        if (err) {
+            console.log(err);
+            res.status(500)
+                .send({
+                    success: 0,
+                    error_type: 3,
+                    error_msg: "Internal Error"
+                });
+            return;
+        }
+        if (!list_books) {
+            res.status(400)
+                .send({
+                    success: 0,
+                    error_type: 4,
+                    error_msg: "no such category"
+                });
+            return;
+        }
+        console.log(list_books.length)
+        res.json({
+            success: 1,
+            books: list_books,
+        });
+    });
 };
