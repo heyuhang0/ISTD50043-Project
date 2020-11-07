@@ -25,9 +25,9 @@ apt update && apt install -y mysql-server-8.0 mysql-client-8.0 phpmyadmin unzip
 
 # Config UTF-8, bind-address and allow remote access
 sed -i -e "$ a [client]\n\n[mysql]\n\n[mysqld]"  /etc/mysql/my.cnf && \
-sed -i -e "s/\(\[client\]\)/\1\ndefault-character-set = utf8/g" /etc/mysql/my.cnf && \
-sed -i -e "s/\(\[mysql\]\)/\1\ndefault-character-set = utf8/g" /etc/mysql/my.cnf && \
-sed -i -e "s/\(\[mysqld\]\)/\1\ninit_connect='SET NAMES utf8'\ncharacter-set-server = utf8\ncollation-server=utf8_unicode_ci\nbind-address = 0.0.0.0/g" /etc/mysql/my.cnf
+sed -i -e "s/\(\[client\]\)/\1\ndefault-character-set = utf8mb4/g" /etc/mysql/my.cnf && \
+sed -i -e "s/\(\[mysql\]\)/\1\ndefault-character-set = utf8mb4/g" /etc/mysql/my.cnf && \
+sed -i -e "s/\(\[mysqld\]\)/\1\ninit_connect='SET NAMES utf8mb4'\ncharacter-set-server = utf8mb4\ncollation-server=utf8mb4_unicode_ci\nbind-address = 0.0.0.0/g" /etc/mysql/my.cnf
 service mysql restart
 mysql -uroot --database="mysql" --execute="UPDATE user SET host='%' WHERE user='root';flush privileges;"
 
