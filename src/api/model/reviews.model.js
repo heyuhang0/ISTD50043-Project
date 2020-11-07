@@ -1,36 +1,37 @@
 module.exports = (sequelize, Sequelize) => {
-    const Reviews = sequelize.define("reviews", {
+    const Review = sequelize.define("review", {
+      reviewId:{
+        type: Sequelize.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+      },
       asin: {
-        type: Sequelize.STRING
+        type: Sequelize.CHAR
+      },
+      reviewerId:{
+        type: Sequelize.INTEGER
       },
       helpful: {
         type: Sequelize.INTEGER
       },
-      reviewText: {
-        type: Sequelize.STRING
-      },
-      reviewTime:{
-          type: Sequelize.STRING
-      },
-      reviewerID:{
-          type: Sequelize.STRING
-      },
-      reviewerName:{
-          type: Sequelize.STRING
+      rating:{
+        type: Sequelize.INTEGER
       },
       summary:{
-          type: Sequelize.STRING
+        type: Sequelize.TEXT
       },
-      unixReviewTime:{
-          type: Sequelize.BIGINT
+      reviewText: {
+        type: Sequelize.TEXT
       },
-      rating:{
-          type: Sequelize.INTEGER
+      updatedAt:{
+          type: Sequelize.DATE
       },
-      reviewID:{
-          type: Sequelize.INTEGER
-      }
+      createdAt:{
+          type: Sequelize.DATE
+      },
+    }, {
+      freezeTableName: true,
     });
   
-    return Reviews;
+    return Review;
   };
