@@ -9,7 +9,7 @@ fi
 set -e
 
 # Config Root Password
-export MYSQL_PWD="this!is@the#test%mysql&password"  # TODO read password from parameters
+export MYSQL_PWD="this_is_the_test_mysql_password"  # TODO read password from parameters
 echo "mysql-server mysql-server/root_password password $MYSQL_PWD" | debconf-set-selections
 echo "mysql-server mysql-server/root_password_again password $MYSQL_PWD" | debconf-set-selections
 
@@ -97,8 +97,8 @@ RUNSQL "CREATE TABLE review (
   INDEX(reviewerId),
   INDEX(helpful),
   INDEX(rating),
-  INDEX(updatedAt),
-  INDEX(createdAt)
+  INDEX(createdAt),
+  INDEX(updatedAt)
 );"
 RUNSQL "INSERT INTO review (asin, reviewerId, helpful, rating, summary, reviewText, createdAt, updatedAt)
   SELECT
