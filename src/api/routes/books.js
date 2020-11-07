@@ -6,14 +6,14 @@ var router = express.Router();
 // Require controller modules.
 var book_controller = require('../controllers/bookController');
 
-// test function
+//TODO: to delete test function
 router.get('/testing', book_controller.book_find_by_price);
 
 // search book
 router.get('/', book_controller.book_search_get);
 
 // create book
-router.post('/',book_controller.book_create_post);
+router.post('/', book_controller.book_create_post);
 
 // trending books
 router.get('/trending', book_controller.book_trending_get);
@@ -23,9 +23,6 @@ router.get('/recent', book_controller.book_recent_get);
 
 // book details
 router.get('/:asin', book_controller.book_details_get);
-
-// create book
-router.post('/', book_controller.book_create_post);
 
 // book reviews
 router.use('/:asin/reviews', reviewsRouter);
