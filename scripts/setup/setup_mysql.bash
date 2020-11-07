@@ -89,8 +89,8 @@ RUNSQL "CREATE TABLE review (
   rating INT NOT NULL DEFAULT 0,
   summary TEXT,
   reviewText TEXT,
-  updatedAt DATETIME NOT NULL DEFAULT CURRENT_DATETIME,
-  createdAt DATETIME NOT NULL DEFAULT CURRENT_DATETIME,
+  createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY(reviewId),
   FOREIGN KEY(reviewerId) references user(userId) on delete cascade on update cascade,
   INDEX(asin),
@@ -100,8 +100,11 @@ RUNSQL "CREATE TABLE review (
   INDEX(updatedAt),
   INDEX(createdAt)
 );"
-RUNSQL "INSERT INTO review (asin, reviewerId, helpful, rating, summary, reviewText, updatedAt, createdAt)
-  SELECT r.asin, u.userId, REGEXP_SUBSTR(r.helpful,'[0-9]+'), r.overall, r.summary, r.reviewText, FROM_UNIXTIME(r.unixReviewTime), FROM_UNIXTIME(r.unixReviewTime)
+RUNSQL "INSERT INTO review (asin, reviewerId, helpful, rating, summary, reviewText, createdAt, updatedAt)
+  SELECT
+    r.asin, u.userId, REGEXP_SUBSTR(r.helpful,'[0-9]+'), r.overall, r.summary, r.reviewText,
+    IF(r.unixReviewTime>0, FROM_UNIXTIME(r.unixReviewTime), '1970-01-01 00:00:01'),
+    IF(r.unixReviewTime>0, FROM_UNIXTIME(r.unixReviewTime), '1970-01-01 00:00:01')
   FROM kindle_review_imported r
   JOIN user u
   ON r.reviewerId = u.email"
