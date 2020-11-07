@@ -90,6 +90,10 @@ def create_app_instance(ec2, app_name, config):
                     'Key': 'app_name',
                     'Value': app_name
                 },
+                {
+                    'Key': 'Name',
+                    'Value': app_name
+                }
             ]
         }],
         KeyName=config['key_name']
