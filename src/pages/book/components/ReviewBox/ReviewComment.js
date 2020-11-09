@@ -1,5 +1,5 @@
-import React, {createElement, useState} from 'react';
-import { Comment, Tooltip, List } from 'antd';
+import React, { createElement, useState } from 'react';
+import { Comment, Tooltip, List, Rate } from 'antd';
 import axios from 'axios';
 import './ReviewComment.less';
 import { LikeFilled, LikeOutlined } from '@ant-design/icons';
@@ -10,12 +10,12 @@ function ReviewItem(props) {
     var liked = 0;
     const [likes, setLikes] = useState(props.review.helpful);
     const [action, setAction] = useState(null);
-    
+
 
     const like = () => {
-        if (liked === 0){
+        if (liked === 0) {
             console.log("liked is ", liked)
-            setLikes(likes+1);
+            setLikes(likes + 1);
             // setDislikes(0);
             setAction('liked');
             liked = 1;
@@ -30,22 +30,34 @@ function ReviewItem(props) {
                 </span>
             </span>
         </Tooltip>
+
     ];
 
     return (
         <List.Item>
-        <Comment
-          actions={actions}
-          author={props.review.reviewerName}
-          content={
-            <p>{props.review.reviewText}</p>
-          }
-          datetime={
-            <p>{props.review.reviewTime}</p>
-          }
-        />
+            <Comment
+                actions={actions}
+                author={
+                    <div>
+                        <p>{props.review.reviewerName}</p>
+                        <Rate
+                            allowHalf
+                            disabled
+                            defaultValue={props.review.overall}
+                        />
+                    </div>
+                }
+                content={
+
+                    <p>{props.review.reviewText}</p>
+
+                }
+                datetime={
+                    <p>{props.review.reviewTime}</p>
+                }
+            />
         </List.Item>
-      );
+    );
 }
 
 class ReviewComment extends React.Component {

@@ -3,43 +3,46 @@ import { Card, List, Rate, Layout } from 'antd';
 import axios from 'axios';
 import './BookCard.less';
 
-  
-  class BookCard extends React.Component {
-    constructor(props) {
-      super(props);
-      this.state = {
-        book: [],
-        loading: true
-      };
-    }
-  
-    componentDidMount() {
-      axios.get(this.props.url).then((res) => {
-        console.log(res.data)
-        this.setState({
-          book: res.data,
-          loading: false
-        });
-      });
-    }
-  
-    render() {
-      // console.log("testing")
-      // console.log(this.state.book)
-      // console.log(typeof(this.state.book))
-      // console.log(this.state.book.rating)
-      // console.log(JSON.stringify(this.state.book.rating))
-      // console.log(2)
-      // console.log(typeof(2))
-      // console.log(Number(this.state.book.rating))
-      // console.log(typeof(Number(this.state.book.rating)))
-      const rating = this.state.book.rating
-      console.log(typeof(rating))
-      console.log(rating)
 
-      return (
-        <div className="book-item">
-          <Card className="book-card" title={this.props.title}>
+class BookCard extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      book: {},
+      loading: true
+    };
+  }
+
+  componentDidMount() {
+    axios.get(this.props.url).then((res) => {
+      console.log(res.data)
+      this.setState({
+        book: res.data,
+        loading: false
+      });
+    });
+  }
+
+  render() {
+    if (this.state.loading) {
+      return <div></div>
+    }
+    // console.log("testing")
+    // console.log(this.state.book)
+    // console.log(typeof(this.state.book))
+    // console.log(this.state.book.rating)
+    // console.log(JSON.stringify(this.state.book.rating))
+    // console.log(2)
+    // console.log(typeof(2))
+    // console.log(Number(this.state.book.rating))
+    // console.log(typeof(Number(this.state.book.rating)))
+    const rating = this.state.book.rating
+    console.log(typeof (rating))
+    console.log(rating)
+
+    return (
+      <div className="book-item">
+        <Card className="book-card" title={this.props.title}>
           <div className="book-cover">
             <img src={this.state.book.imUrl} alt={this.state.book.title} />
           </div>
@@ -60,16 +63,16 @@ import './BookCard.less';
             <p className="decription">
               Description: {this.state.book.description}
             </p>
-            
+
           </div>
-          </Card>
-          
-        </div>
-       
-      )
-    }
+        </Card>
+
+      </div>
+
+    )
   }
-  
-  export default BookCard;
-  
+}
+
+export default BookCard;
+
 
