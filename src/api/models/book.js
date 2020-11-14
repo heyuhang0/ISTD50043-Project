@@ -30,16 +30,16 @@ const BookSchema = new Schema({
     related: [String],
     rank: Number, 
     review_number: {
-        type: String,
-        default: "0"    
+        type: Number,
+        default: 0   
     }, 
     rating_average: {
-        type: String, 
-        default: "0"
+        type: Number, 
+        default: 0
     }, 
     rating_total:{
-        type: String, 
-        default: "0"
+        type: Number, 
+        default: Number
     } 
 });
 
