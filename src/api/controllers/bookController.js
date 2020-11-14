@@ -141,6 +141,7 @@ exports.book_trending_get = function (req, res) {
                 success: 1,
                 books: books
             });
+            console.log(books)
         });
 }
 

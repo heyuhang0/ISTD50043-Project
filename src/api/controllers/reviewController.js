@@ -20,13 +20,13 @@ exports.review_for_a_book_get = function (req, res, next) {
         });
     });
 
-    console.log('Getting reviews',
-        'for book ASIN=' + bookASIN,
-        'with limit=' + limit,
-        'and offset=' + offset);
-    res.json({
-        review: mockReviews, user_review_id: null
-    });
+    // console.log('Getting reviews',
+    //     'for book ASIN=' + bookASIN,
+    //     'with limit=' + limit,
+    //     'and offset=' + offset);
+    // res.json({
+    //     review: mockReviews, user_review_id: null
+    // });
 };
 
 // Handle review create on POST.

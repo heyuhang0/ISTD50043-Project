@@ -36,9 +36,9 @@ class BookCard extends React.Component {
     // console.log(typeof(2))
     // console.log(Number(this.state.book.rating))
     // console.log(typeof(Number(this.state.book.rating)))
-    const rating = this.state.book.rating
-    console.log(typeof (rating))
-    console.log(rating)
+    const rating = this.state.book.rating_average
+    // console.log(typeof (rating))
+    // console.log(rating)
 
     return (
       <div className="book-item">
@@ -58,8 +58,8 @@ class BookCard extends React.Component {
               disabled
               defaultValue={rating}
             />
-            <span className="rate-num"> {this.state.book.rating}</span>
-            <p className="ratecount"> {this.state.book.ratingCount} reviews</p>
+            <span className="rate-num"> {this.state.book.rating_average}</span>
+            <p className="ratecount"> {this.state.book.rating_total} reviews</p>
             <p className="decription">
               Description: {this.state.book.description}
             </p>

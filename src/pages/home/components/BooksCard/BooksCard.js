@@ -21,9 +21,9 @@ function BookItem(props) {
           <Rate
             allowHalf
             disabled
-            defaultValue={props.book.rating}
+            defaultValue={props.book.rating_average}
           />
-          <span className="rate-num"> {props.book.rating}</span>
+          <span className="rate-num"> {props.book.rating_average}</span>
         </div>
       </div>
     </List.Item>

@@ -43,7 +43,7 @@ function ReviewItem(props) {
                         <Rate
                             allowHalf
                             disabled
-                            defaultValue={props.review.overall}
+                            defaultValue={props.review.rating}
                         />
                     </div>
                 }
@@ -71,8 +71,6 @@ class ReviewComment extends React.Component {
 
     componentDidMount() {
         axios.get(this.props.url).then((res) => {
-            console.log(JSON.stringify(res.data))
-            console.log(res.data)
             this.setState({
                 reviews: res.data,
                 loading: false
