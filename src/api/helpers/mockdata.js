@@ -1,48 +1,164 @@
-var mockBooksList = [
-    {
-      asin: "B00A287PG2",
-      title: "To Kill a Mockingbird",
-      author: "Harper Lee",
-      imUrl: "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1553383690l/2657.jpg",
-      rating: 4.28,
-      ratingCount: 4498763
-    },
-    {
-      asin: "B008S38QHU",
-      title: "1984",
-      author: "George Orwell",
-      imUrl: "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1532714506l/40961427._SX318_.jpg",
-      rating: 4.19,
-      ratingCount: 3138298
-    },
-    {
-      asin: "B01N1Y1ULL",
-      title: "Harry Potter and the Sorcerer's Stone (Harry Potter, #1)",
-      author: "J.K. Rowling",
-      imUrl: "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1474154022l/3._SY475_.jpg",
-      rating: 4.47,
-      ratingCount: 7044409
-    },
-    {
-      asin: "B01AYDJWZQ",
-      title: "The Great Gatsby",
-      author: "F. Scott Fitzgerald",
-      imUrl: "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1490528560l/4671._SY475_.jpg",
-      rating: 3.92,
-      ratingCount: 3773727
-    },
-    {
-      asin: "B014T6N5J8",
-      title: "Animal Farm",
-      author: "George Orwell",
-      imUrl: "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1325861570i/170448._SY475_.jpg",
-      rating: 3.95,
-      ratingCount: 2739074
-    }
-  ];
+const mockBooksList =[
+  {
+      "related": [],
+      "review_number": 394,
+      "rating_average": 4.1904,
+      "_id": "5fafaf4f152105455c522f1c",
+      "asin": "B005ME39HU",
+      "price": 6.95,
+      "imUrl": "http://ecx.images-amazon.com/images/I/51s38RAdjQL._BO2,204,203,200_PIsitb-sticker-v3-big,TopRight,0,-55_SX278_SY278_PIkin4,BottomRight,1,22_AA300_SH20_OU01_.jpg",
+      "description": "",
+      "rank": 5286,
+      "title": "Bah, Humbug! (Christmas Street Romance #1)",
+      "author": "Heather Horrocks",
+      "category": "Literature & Fiction",
+      "rating_total": 1651
+  },
+  {
+      "related": [],
+      "review_number": 394,
+      "rating_average": 3.802,
+      "_id": "5fafafd8152105455c54dd35",
+      "asin": "B005C5YZ86",
+      "price": 0.99,
+      "imUrl": "http://ecx.images-amazon.com/images/I/51%2BY4RE8eqL._BO2,204,203,200_PIsitb-sticker-v3-big,TopRight,0,-55_SX278_SY278_PIkin4,BottomRight,1,22_AA300_SH20_OU01_.jpg",
+      "description": "",
+      "rank": 324,
+      "title": "Dane: Vol 1 (MacKenzies of Montana)",
+      "author": "Liliana Hart",
+      "category": "Literature & Fiction",
+      "rating_total": 1498
+  },
+  {
+      "related": [],
+      "review_number": 390,
+      "rating_average": 4.1205,
+      "_id": "5fafaff0152105455c555751",
+      "asin": "B00CCRTFSC",
+      "price": 0.99,
+      "imUrl": "http://ecx.images-amazon.com/images/I/51aRrU3r69L._BO2,204,203,200_PIsitb-sticker-v3-big,TopRight,0,-55_SX278_SY278_PIkin4,BottomRight,1,22_AA300_SH20_OU01_.jpg",
+      "description": "",
+      "rank": 188181,
+      "title": "Selling Scarlett (A Love Inc. Novel)",
+      "author": "Ella James",
+      "category": "Literature & Fiction",
+      "rating_total": 1607
+  },
+  {
+      "related": [
+          "B00KC8Q522"
+      ],
+      "review_number": 334,
+      "rating_average": 4.2036,
+      "_id": "5fafaf4f152105455c523333",
+      "asin": "B00DJB6KE2",
+      "price": 17.95,
+      "imUrl": "http://ecx.images-amazon.com/images/I/41xgGSXLBwL._BO2,204,203,200_PIsitb-sticker-v3-big,TopRight,0,-55_SX278_SY278_PIkin4,BottomRight,1,22_AA300_SH20_OU01_.jpg",
+      "description": "\"A fine love story that manages to be both charming and sensual at the same time, and offers the prospect of a pleasant hour or two for a romance fan who enjoys a good modern fairy tale.\"~Catherine Langrehr for IndieReader & USA Today\"You will need fans, ice, Valium!!!!! I wish I\nwere kidding.\"~ Natasha is a Book Junkie \"Stripped has some of the hottest, most\nintense, emotionally moving sex scenes I've ever read. There's a\ntremendous amount of buildup to finally get to the good stuff, and when you get\nthere, the reward is page after page after page of emotional, intense, and\ncreative sex. Well done, Jasinda. *slow clap* Well done.\"~ Smut Book\nClub  \"A sensuous, erotic and breathtaking romance\nthat breaks molds, shatters thoughts and makes you feel alive. Beautiful.\nSinful. Sexy. The perfect read\"~ Angie's\nDreamy Reads \"One of the most\naddicting books of the year! Filled with seduction, struggle\nand star power, I couldn't put this book down. And god, it's absolutely\noff-the-charts, intensely hot! Get ready!\"~ Vilma's Book Blog \"Jasinda Wilder proves again why she is a\nbestselling author - Grey and Dawson will knock not only your socks off but the\nrest of your clothes as well; Seductive, Sexy and Sensational\"~ WhirlwindbooksSlow building and then an explosion that leaves you so satisfied and wanting more.  Smokin' hot love scenes that will rival any that you've read before.~A Love Affair With BooksYou want a sexy read? You want to cry ugly tears and laugh out of loud at the same time? You want to swoon over a book worthy boyfriend? ....THEN READ STRIPPED!!!~ Jacqueline's Reads",
+      "rank": 263119,
+      "title": "Stripped",
+      "author": "Jasinda Wilder",
+      "category": "Literature & Fiction",
+      "rating_total": 1404
+  },
+  {
+      "related": [
+          "B00LBQ34SC"
+      ],
+      "review_number": 297,
+      "rating_average": 3.963,
+      "_id": "5fafafcd152105455c54a263",
+      "asin": "B005QEA87A",
+      "price": 0.99,
+      "imUrl": "http://ecx.images-amazon.com/images/I/417zpgjja-L._BO2,204,203,200_PIsitb-sticker-v3-big,TopRight,0,-55_SX278_SY278_PIkin4,BottomRight,1,22_AA300_SH20_OU01_.jpg",
+      "description": "",
+      "rank": 4756,
+      "title": "Bewitching the Werewolf (Megan Stephens Book 1)",
+      "author": "Caroline Hanson",
+      "category": "Literature & Fiction",
+      "rating_total": 1177
+  },
+  {
+      "related": [],
+      "review_number": 278,
+      "rating_average": 4.3165,
+      "_id": "5fafaf96152105455c53938e",
+      "asin": "B006P5CH1O",
+      "price": 3.95,
+      "imUrl": "http://ecx.images-amazon.com/images/I/41GQbid-XKL._BO2,204,203,200_PIsitb-sticker-v3-big,TopRight,0,-55_SX278_SY278_PIkin4,BottomRight,1,22_AA300_SH20_OU01_.jpg",
+      "description": "I wrote this short while I was in the middle of editing a trilogy of adventure novels, with the immediate intention of providing it without charge.  I wanted to give strangers a way to sample my writing, while risking nothing but the time it takes to read a few pages.  I hope you enjoy it, and will try out my other works as they come available.",
+      "rank": 7106,
+      "title": "When God Whispers Loudly (Terreldor Press Shorts Book 1)",
+      "author": "Chris M. Hibbard",
+      "category": "Parenting & Relationships",
+      "rating_total": 1200
+  },
+  {
+      "related": [],
+      "review_number": 275,
+      "rating_average": 4.72,
+      "_id": "5fafb01c152105455c5633e6",
+      "asin": "B00CYKHQW4",
+      "price": 16.95,
+      "imUrl": "http://ecx.images-amazon.com/images/I/51Guh2CJaXL._BO2,204,203,200_PIsitb-sticker-v3-big,TopRight,0,-55_SX278_SY278_PIkin4,BottomRight,1,22_AA300_SH20_OU01_.jpg",
+      "description": "\"A brilliant follow-up to a wondrous debut. Book three, where are you?\" - RT Magazine",
+      "rank": 1063340,
+      "title": "Shooting Scars: The Artists Trilogy 2: (The Artists Trilogy 2)",
+      "author": "Karina Halle",
+      "category": "Literature & Fiction",
+      "rating_total": 1298
+  },
+  {
+      "related": [],
+      "review_number": 274,
+      "rating_average": 3.7044,
+      "_id": "5fafaf1a152105455c514b65",
+      "asin": "B00C7HG9KY",
+      "price": 0,
+      "imUrl": "http://ecx.images-amazon.com/images/I/41XxV25bYjL._BO2,204,203,200_PIsitb-sticker-v3-big,TopRight,0,-55_SX278_SY278_PIkin4,BottomRight,1,22_AA300_SH20_OU01_.jpg",
+      "description": "",
+      "rank": 9323,
+      "title": "The Job Offer",
+      "author": "Eleanor Webb",
+      "category": "Romance",
+      "rating_total": 1015
+  },
+  {
+      "related": [
+          "B00KPZSYZI"
+      ],
+      "review_number": 256,
+      "rating_average": 4.332,
+      "_id": "5fafafde152105455c54f8ac",
+      "asin": "B009XGD2DY",
+      "price": 14.95,
+      "imUrl": "http://ecx.images-amazon.com/images/I/51bpP09-INL._BO2,204,203,200_PIsitb-sticker-v3-big,TopRight,0,-55_SX278_SY278_PIkin4,BottomRight,1,22_AA300_SH20_OU01_.jpg",
+      "description": "",
+      "rank": 177363,
+      "title": "Brothers and Bones",
+      "author": "James Hankins",
+      "category": "Literature & Fiction",
+      "rating_total": 1109
+  },
+  {
+      "related": [],
+      "review_number": 254,
+      "rating_average": 4.2362,
+      "_id": "5fafaf30152105455c5197f4",
+      "asin": "B00B687AX0",
+      "price": 2.99,
+      "imUrl": "http://ecx.images-amazon.com/images/I/51n3H%2B299zL._BO2,204,203,200_PIsitb-sticker-v3-big,TopRight,0,-55_SX278_SY278_PIkin4,BottomRight,1,22_AA300_SH20_OU01_.jpg",
+      "description": "As a child, JC was fascinated by things that went bump in the night. As they say, some things never change. Now, as an adult, she divides her time between the sexy law men, mythical creatures, and kick-ass heroines that live inside her head and pursuing her bachelor's degree in English. JC is a San Francisco Bay Area native, but has also called both Texas and Louisiana home. These days she rocks her flip flops year round in Northern California and can't imagine a climate more beautiful. JC writes adult, new adult, and young adult fiction. She dabbles in many different genres including science fiction, horror, chick lit, and murder mysteries, yet she is most enthralled by supernatural stories-- and everything has at least a splash of romance.",
+      "rank": 588322,
+      "title": "Everything I Left Behind (Men with Badges Book 1)",
+      "author": "JC Emery",
+      "category": "Literature & Fiction",
+      "rating_total": 1076
+  }
+];
 
 
-  var mockReviewsList = [
+const mockReviewsList = [
     {
       "": 0,
       "asin": "B000F83SZQ",
@@ -211,7 +327,7 @@ var mockBooksList = [
   ];
 
 
-  var mockCategoriesSuggestions = [
+  const mockCategoriesSuggestions = [
     "Art",
     "Biography",
     "Business",

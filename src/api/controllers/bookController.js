@@ -119,26 +119,34 @@ exports.book_find_by_price = function (req, res) {
 
 // Trending books
 exports.book_trending_get = function (req, res) {
-    Book.find({}).limit(5).sort([["review_number", -1], ["rating_average", -1]]).exec(function (err, books) {
-        if (err) {
-            res.status(400).send({
-                success: 0,
-                error_type: 2,
-                error_msg: "Error during finding trending books"
+    Book.find({
+        "title": { "$nin": [""] },
+        "author": { "$nin": [""] },
+        "category": { "$nin": [""] },
+        "rating_average": { "$nin": [""] },
+        "imUrl": { "$nin": [""] }
+    })
+        .sort([["review_number", -1], ["rating_average", -1]])
+        .limit(10)
+        .exec(function (err, books) {
+            if (err) {
+                res.status(400).send({
+                    success: 0,
+                    error_type: 2,
+                    error_msg: "Error during finding trending books"
+                });
+                return;
+            }
+            res.json({
+                success: 1,
+                books: books
             });
-            return;
-        }
-        console.log("Trending books");
-        console.log({ 'books': books })
-        res.json({ 'books': books });
-    });
+        });
 }
 
 // Recent books
 exports.book_recent_get = function (req, res) {
-    // console.log("Recent books: ")
-    // console.log({ 'books': mockBooks.reverse() })
-    res.json({ 'books': mockBooks.reverse() });
+    res.json({ success: 1, books: mockBooks.reverse() });
 }
 
 // Get book on asin
