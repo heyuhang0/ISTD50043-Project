@@ -2,10 +2,14 @@
 mockdata = require('../helpers/mockdata');
 const Book = require('../models/book');
 var Category = require('../models/category');
-var async = require('async')
+var async = require('async');
+const { Result } = require('antd');
 
 var mockBooks = mockdata.mockBooks
 const asin_regex = /(B0|BT)([0-9A-Z]{8})$/;
+
+
+
 // Search books
 exports.book_search_get = function (req, res) {
     let keyword = req.query.keyword;
