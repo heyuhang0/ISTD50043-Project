@@ -338,10 +338,24 @@ const mockReviewsList = [
     "Cookbooks"
   ];
 
+
+  const mock_user_data =    {
+    "reviewId": 983032,
+    "asin": "B005GFBQWU",
+    "reviewerId": 131072,
+    "helpful": 0,
+    "rating": 5,
+    "summary": "dummy summary",
+    "reviewText": "dummy reviewText",
+    "updatedAt": "2020-11-14T14:21:52.000Z",
+    "createdAt": "2020-11-14T14:21:52.000Z"
+}
+
 module.exports = {
     mockBooks: mockBooksList,
     mockReview: mockReviewsList,
-    mockCategories: mockCategoriesSuggestions
+    mockCategories: mockCategoriesSuggestions,
+    mockUserReview: mock_user_data
 };
 
 

@@ -39,7 +39,7 @@ const BookSchema = new Schema({
     }, 
     rating_total:{
         type: Number, 
-        default: Number
+        default: 0
     } 
 });
 

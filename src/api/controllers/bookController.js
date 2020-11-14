@@ -143,8 +143,12 @@ exports.book_trending_get = function (req, res) {
         });
 }
 
+const sqlquery = "SELECT asin FROM reviews \
+    WHERE ";
+
 // Recent books
 exports.book_recent_get = function (req, res) {
+
     res.json({ success: 1, books: mockBooks.reverse() });
 }
 

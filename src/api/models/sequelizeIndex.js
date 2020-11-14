@@ -7,6 +7,7 @@ const db = {};
 db.Sequelize = Sequelize;
 db.sequelize = sequelize;
 
-db.review = require("./reviews.model.js")(sequelize, Sequelize);
+db.review = require("./reviews.js")(sequelize, Sequelize);
+db.user = require("./user.js")(sequelize, Sequelize);
 
 module.exports = db;
