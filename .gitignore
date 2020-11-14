@@ -24,3 +24,6 @@ yarn-error.log*
 
 # dev env
 /.vscode
+
+# credentials & config
+.env

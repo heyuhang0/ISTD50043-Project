@@ -13,7 +13,7 @@ const CommentList = ({ comments }) => (
   />
 );
 
-const Editor = ({ onChange, onSubmit, submitting, value, rate, onChangeRate }) => (
+const Editor = ({ onChange, onSubmit, submitting, value, rate, onChangeRate, visible, handleOk, handleCancel }) => (
   <>
     <Form.Item>
       <Rate
@@ -28,6 +28,14 @@ const Editor = ({ onChange, onSubmit, submitting, value, rate, onChangeRate }) =
       <Button htmlType="submit" loading={submitting} onClick={onSubmit} type="primary">
         Add A Review
       </Button>
+      <Modal
+        title="Basic Modal"
+        visible={visible}
+        onOk={handleOk}
+        onCancel={handleCancel}
+      >
+        <p>You have submitted your review once. Please do not submit again.</p>
+      </Modal>
     </Form.Item>
   </>
 );
@@ -42,8 +50,29 @@ class AddReview extends React.Component {
       value: '',
       rate: 0,
       submitted: false,
+      visible: false,
     };
-  }
+  };
+
+  showModal = () => {
+    this.setState({
+      visible: true,
+    });
+  };
+
+  handleOk = e => {
+    console.log(e);
+    this.setState({
+      visible: false,
+    });
+  };
+
+  handleCancel = e => {
+    console.log(e);
+    this.setState({
+      visible: false,
+    });
+  };
 
   handleSubmit = () => {
     if (!this.state.submitted) {
@@ -79,7 +108,11 @@ class AddReview extends React.Component {
         });
       }, 1000);
     };
-    console.log("You have submitted once!")
+    if (this.state.submitted) {
+      console.log(this.state.submitted)
+      console.log("You have submitted once!")
+      this.showModal();
+    };
   };
 
   handleChange = e => {
@@ -96,27 +129,9 @@ class AddReview extends React.Component {
   }
 
   render() {
-    const { comments, submitting, value, rate, submitted } = this.state;
+    const { comments, submitting, value, rate, submitted, visible } = this.state;
     console.log(submitted)
-    if (!submitted) {
-      return (
-        <>
-          <Comment
-            content={
-              <Editor
-                onChange={this.handleChange}
-                onChangeRate={this.handleChangeRate}
-                onSubmit={this.handleSubmit}
-                submitting={submitting}
-                value={value}
-                rate={rate}
-              />
-            }
-          />
-          {comments.length > 0 && <CommentList comments={comments} />}
-        </>
-      );
-    }
+
     return (
       <>
         <Comment
@@ -128,14 +143,17 @@ class AddReview extends React.Component {
               submitting={submitting}
               value={value}
               rate={rate}
+              visible={visible}
+              handleOk={this.handleOk}
+              handleCancel={this.handleCancel}
             />
           }
         />
         {comments.length > 0 && <CommentList comments={comments} />}
       </>
-    );;
-  }
-  return;
-}
+    );
+
+  };
+};
 
 export default AddReview
