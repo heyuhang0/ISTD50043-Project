@@ -166,7 +166,7 @@ exports.review_update_post = function (req, res) {
 
     const review = {
         summary: summary,
-        reviewText: reviewText,
+        reviewText: review_text,
         rating: rating
     }
     Review.update(req.body, {
@@ -174,17 +174,22 @@ exports.review_update_post = function (req, res) {
     }).then(num => {
         if (num == 1) {
             res.send({
-                message: "Reviews was updated successfully."
+                success: 1,
+                updated_review: mock_user_review,
             });
         } else {
-            res.send({
-                message: `Cannot update Review with id=${reviewId}. Maybe Review was not found or req.body is empty!`
+            res.status(500).send({
+                success: 0,
+                error_type: 1,
+                error_message: `Cannot update Review with id=${reviewId}. Maybe Review was not found or req.body is empty!`
             });
         }
     })
         .catch(err => {
             res.status(500).send({
-                message: "Error updating Review with id=" + reviewId
+                success: 0,
+                error_type: 1,
+                error_message: "Error updating Review with id=" + reviewId
             });
         });
 };
