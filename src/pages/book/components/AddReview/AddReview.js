@@ -2,8 +2,6 @@ import React from 'react';
 import { Comment, Form, Button, List, Input, Rate, Modal } from 'antd';
 import moment from 'moment';
 import './AddReview.less';
-import axios from 'axios';
-import { useParams } from 'react-router-dom';
 
 const { TextArea } = Input;
 
@@ -139,7 +137,7 @@ class AddReview extends React.Component {
   }
 
   render() {
-    const { comments, submitting, value, rate, submitted, visible } = this.state;
+    const { comments, submitting, value, rate, visible } = this.state;
     // console.log(submitted)
 
     return (

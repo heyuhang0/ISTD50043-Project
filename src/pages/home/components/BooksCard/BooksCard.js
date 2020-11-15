@@ -23,7 +23,7 @@ function BookItem(props) {
             disabled
             defaultValue={props.book.rating_average}
           />
-          <span className="rate-num"> {props.book.rating_average}</span>
+          <span className="rate-num"> {props.book.rating_average.toFixed(1)}</span>
         </div>
       </div>
     </List.Item>

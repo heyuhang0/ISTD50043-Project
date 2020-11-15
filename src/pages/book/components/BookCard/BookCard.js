@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, List, Rate, Layout } from 'antd';
+import { Card, Rate } from 'antd';
 import axios from 'axios';
 import './BookCard.less';
 

@@ -3,7 +3,6 @@ import { Card, List, Rate } from 'antd';
 import axios from 'axios';
 import './RecommendationCard.less'
 import '../BookCard/BookCard'
-import { useParams } from 'react-router-dom';
 
 
 function BookItem(props) {
