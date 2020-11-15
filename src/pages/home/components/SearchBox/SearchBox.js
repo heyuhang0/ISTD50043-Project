@@ -37,12 +37,12 @@ class SearchBox extends React.Component {
           onSearch={this.onSearch}
         />
         <div className="search-box-suggestions">
-          {this.state.suggestions.map(s => (
+          {/* {this.state.suggestions.map(s => (
             <CheckableTag
               key={s}
               onChange={() => this.onSearch(s)}
             >{s}</CheckableTag>
-          ))}
+          ))} */}
         </div>
       </div>
     );

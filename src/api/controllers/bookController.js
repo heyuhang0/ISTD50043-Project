@@ -120,11 +120,11 @@ exports.book_find_by_price = function (req, res) {
 // Trending books
 exports.book_trending_get = function (req, res) {
     Book.find({
-        "title": {"$nin": [""]},
-        "author": {"$nin": [""]},
-        "category": {"$nin": [""]},
-        "rating_average": {"$nin": [""]},
-        "imUrl": {"$nin": [""]}
+        "title": { "$nin": [""] },
+        "author": { "$nin": [""] },
+        "category": { "$nin": [""] },
+        "rating_average": { "$nin": [""] },
+        "imUrl": { "$nin": [""] }
     })
         .sort([["review_number", -1], ["rating_average", -1]])
         .limit(10)
@@ -139,7 +139,9 @@ exports.book_trending_get = function (req, res) {
             }
             res.json({
                 success: 1,
-                books: books});
+                books: books
+            });
+            console.log(books)
         });
 }
 

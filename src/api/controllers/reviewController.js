@@ -15,24 +15,27 @@ exports.review_for_a_book_get = async function (req, res, next) {
     let offset = Number(req.query.offset) || 0;
 
     Review.findAll({ where: { asin: bookASIN } })
-    .then(data => 
-        { res.send({
-            success:1,
-            reviews: data,
-            user_review: mock_user_review
-        }); 
-    }).catch(err => {
-        res.status(500).send({
-            success: 0,
-            error_type: 0,
-            error_message: err.message || "Some error occurred while retrieving reviews."
+        .then(data => {
+            res.send({
+                success: 1,
+                reviews: data,
+                user_review: mock_user_review
+            });
+        }).catch(err => {
+            res.status(500).send({
+                success: 0,
+                error_type: 0,
+                error_message: err.message || "Some error occurred while retrieving reviews."
+            });
         });
-    });
 
-    console.log('Getting reviews',
-        'for book ASIN=' + bookASIN,
-        'with limit=' + limit,
-        'and offset=' + offset);
+    // console.log('Getting reviews',
+    //     'for book ASIN=' + bookASIN,
+    //     'with limit=' + limit,
+    //     'and offset=' + offset);
+    // res.json({
+    //     review: mockReviews, user_review_id: null
+    // });
 };
 
 // Handle review create on POST.
@@ -88,28 +91,29 @@ exports.review_create_post = async function (req, res) {
 
     // Save Review in the database
     console.log('Posting review for book ASIN=' + bookASIN);
-    try{
+    try {
         let saved_review = await Review.create(review)
-    let book_reviewed = await Book.findOne({ asin: bookASIN });
-    let new_average_rating = (book_reviewed.rating_total + rating) / (book_reviewed.review_number + 1);
-    let updated_book = await Book.findOneAndUpdate(
-        { asin: bookASIN },
-        {
-            $inc: {
-                review_number: 1,
-                rating_total: rating
+        let book_reviewed = await Book.findOne({ asin: bookASIN });
+        let new_average_rating = (book_reviewed.rating_total + rating) / (book_reviewed.review_number + 1);
+        let updated_book = await Book.findOneAndUpdate(
+            { asin: bookASIN },
+            {
+                $inc: {
+                    review_number: 1,
+                    rating_total: rating
+                },
+                $set: {
+                    rating_average: new_average_rating
+                }
             },
-            $set: {
-                rating_average: new_average_rating
-            }
-        },
-        { new: true }
-    );
-    res.json({ 
-        success: 1, 
-        book: updated_book, 
-        review: saved_review });
-    }catch(err){
+            { new: true }
+        );
+        res.json({
+            success: 1,
+            book: updated_book,
+            review: saved_review
+        });
+    } catch (err) {
         console.log(err);
         res.status(500).send({
             success: 0,
@@ -130,7 +134,7 @@ exports.review_update_post = function (req, res) {
     let summary = req.body.summary;
     let review_text = req.body.reviewText;
     let userId = 131072;
-    
+
     if (!bookASIN || !rating || !summary || !review_text) {
         res.status(400).send({
             success: 0,
