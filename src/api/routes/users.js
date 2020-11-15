@@ -9,4 +9,7 @@ router.post('/login', wrapper(userController.login_post));
 // register
 router.post('/register', wrapper(userController.register_post));
 
+// get basic user information
+router.get('/me', wrapper(userController.current_user_get));
+
 module.exports = router;

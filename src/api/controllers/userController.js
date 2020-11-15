@@ -139,3 +139,33 @@ exports.register_post = async function (req, res, next) {
         token: token
     });
 };
+
+exports.current_user_get = async function (req, res) {
+    let token = req.headers.authorization;
+    if (!token || !token.startsWith("Bearer ")) {
+        res.status(401).send({
+            success: 0,
+            error_type: 1,
+            error_message: "failed to authenticate user."
+        });
+        return;
+    };
+    token = token.substring(7, token.length);
+    try {
+        userId = jwt.verify(token, authentication_secret).user;
+    } catch (err) {
+        res.status(401).send({
+            success: 0,
+            error_type: 1,
+            error_message: "failed to authenticate user."
+        });
+        return;
+    };
+
+    let user = await User.findOne({
+        attributes: ["userId", "name", "email"],
+        where: { userId: userId }
+    });
+
+    res.json(user);
+}
