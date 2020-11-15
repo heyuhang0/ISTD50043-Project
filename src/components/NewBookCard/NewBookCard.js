@@ -41,6 +41,9 @@ const NewBookForm = ({ visible, onCreate, onCancel }) => {
         form={form}
         layout="vertical"
         name="form_in_modal"
+        initialValues={{
+          price: 0
+        }}
       >
         <Form.Item
           name="title"
@@ -119,7 +122,6 @@ const NewBookForm = ({ visible, onCreate, onCancel }) => {
               ]}
             >
               <InputNumber
-                defaultValue={0}
                 min={0}
                 formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
                 parser={value => value.replace(/\$\s?|(,*)/g, '')}
