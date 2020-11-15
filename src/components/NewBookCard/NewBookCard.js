@@ -12,8 +12,8 @@ const NewBookForm = ({ visible, onCreate, onCancel }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get('/api/categories/tree').then((res) => {
-      setCategories(res.data.categories);
+    axios.get('/api/categories').then((res) => {
+      setCategories(res.data.category_list.filter(e => e));
       setLoading(false);
     });
   }, []);
@@ -103,7 +103,7 @@ const NewBookForm = ({ visible, onCreate, onCancel }) => {
                   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                 }
               >
-                {categories.map((c, i) => <Option key={c}>{c}</Option>)}
+                {categories.map((c) => <Option key={c._id}>{c.category}</Option>)}
               </Select>
             </Form.Item>
           </Col>

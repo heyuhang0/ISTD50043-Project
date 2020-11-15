@@ -5,7 +5,7 @@ var categoryController = require('../controllers/categoryController');
 var bookCantroller = require('../controllers/bookController');
 
 // get all categories
-router.get('/tree', categoryController.all_categories_get);
+router.get('/', categoryController.all_categories_get);
 
 // get suggested categories
 router.get('/suggested', categoryController.suggested_categories_get);

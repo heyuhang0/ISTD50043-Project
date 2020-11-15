@@ -18,7 +18,7 @@ class SearchBox extends React.Component {
 
   componentDidMount() {
     axios.get("/api/categories/suggested").then((res) => {
-      this.setState({ suggestions: res.data.categories });
+      this.setState({ suggestions: res.data.category_list.filter(e => e) });
     });
   }
 
@@ -39,10 +39,10 @@ class SearchBox extends React.Component {
         <div className="search-box-suggestions">
           {/* {this.state.suggestions.map(s => (
             <CheckableTag
-              key={s}
-              onChange={() => this.onSearch(s)}
-            >{s}</CheckableTag>
-          ))} */}
+              key={s._id}
+              onChange={() => this.onSearch(s.category)}
+            >{s.category}</CheckableTag>
+          ))}
         </div>
       </div>
     );
