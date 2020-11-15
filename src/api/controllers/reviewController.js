@@ -12,31 +12,6 @@ exports.review_for_a_book_get = async function (req, res) {
     let bookASIN = req.params.asin;
     let limit = Number(req.query.limit) || 20;
     let offset = Number(req.query.offset) || 0;
-<<<<<<< HEAD
-
-    Review.findAll({ where: { asin: bookASIN } })
-        .then(data => {
-            res.send({
-                success: 1,
-                reviews: data,
-                user_review: mock_user_review
-            });
-        }).catch(err => {
-            res.status(500).send({
-                success: 0,
-                error_type: 0,
-                error_message: err.message || "Some error occurred while retrieving reviews."
-            });
-        });
-
-    // console.log('Getting reviews',
-    //     'for book ASIN=' + bookASIN,
-    //     'with limit=' + limit,
-    //     'and offset=' + offset);
-    // res.json({
-    //     review: mockReviews, user_review_id: null
-    // });
-=======
     let token = req.headers.authorization;
     let userId = 131072;
     let user_review;
@@ -122,7 +97,6 @@ exports.review_for_a_book_get = async function (req, res) {
         reviews: reviews,
         user_review: user_review
     })
->>>>>>> review_user_backend
 };
 
 // Handle review create on POST.
@@ -189,39 +163,6 @@ exports.review_create_post = async function (req, res) {
 
     // Save Review in the database
     console.log('Posting review for book ASIN=' + bookASIN);
-<<<<<<< HEAD
-    try {
-        let saved_review = await Review.create(review)
-        let book_reviewed = await Book.findOne({ asin: bookASIN });
-        let new_average_rating = (book_reviewed.rating_total + rating) / (book_reviewed.review_number + 1);
-        let updated_book = await Book.findOneAndUpdate(
-            { asin: bookASIN },
-            {
-                $inc: {
-                    review_number: 1,
-                    rating_total: rating
-                },
-                $set: {
-                    rating_average: new_average_rating
-                }
-            },
-            { new: true }
-        );
-        res.json({
-            success: 1,
-            book: updated_book,
-            review: saved_review
-        });
-    } catch (err) {
-        console.log(err);
-        res.status(500).send({
-            success: 0,
-            error_type: 2,
-            error_message: "failed to create new review."
-        });
-        return;
-    }
-=======
     let saved_review = await Review.create(
         review,
         {
@@ -252,7 +193,6 @@ exports.review_create_post = async function (req, res) {
         book: updated_book,
         review: saved_review
     });
->>>>>>> review_user_backend
 };
 
 
@@ -266,11 +206,7 @@ exports.review_update_post = async function (req, res) {
     let review_text = req.body.reviewText;
     let userId = 131072;
 
-<<<<<<< HEAD
-    if (!bookASIN || !rating || !summary || !review_text) {
-=======
     if (!bookASIN || !reviewId || !rating || !summary || !review_text) {
->>>>>>> review_user_backend
         res.status(400).send({
             success: 0,
             error_type: 0,
