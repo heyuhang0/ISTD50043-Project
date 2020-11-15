@@ -1,12 +1,12 @@
-var express = require('express');
-var router = express.Router();
-
-var userController = require('../controllers/userController');
+const express = require('express');
+const router = express.Router();
+const userController = require('../controllers/userController');
+let wrapper = fn => (...args) => fn(...args).catch(args[2]);
 
 // login
-router.post('/login', userController.login_post);
+router.post('/login', wrapper(userController.login_post));
 
 // register
-router.post('/register', userController.register_post);
+router.post('/register', wrapper(userController.register_post));
 
 module.exports = router;
