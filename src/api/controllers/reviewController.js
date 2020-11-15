@@ -1,18 +1,18 @@
 
-mockdata = require('../helpers/mockdata');
 const jwt = require('jsonwebtoken');
 const Book = require('../models/book');
 const db = require("../models/sequelizeIndex");
 const Review = db.review;
-const Op = db.Sequelize.Op;
+const User = db.user;
 const authentication_secret = process.env.AUTHENTICATION_SECRET;
-const mock_user_review = mockdata.mockUserReview;
+const asin_regex = /(B0|BT)([0-9A-Z]{8})$/;
 
 // get review for one book
-exports.review_for_a_book_get = async function (req, res, next) {
+exports.review_for_a_book_get = async function (req, res) {
     let bookASIN = req.params.asin;
     let limit = Number(req.query.limit) || 20;
     let offset = Number(req.query.offset) || 0;
+<<<<<<< HEAD
 
     Review.findAll({ where: { asin: bookASIN } })
         .then(data => {
@@ -36,6 +36,93 @@ exports.review_for_a_book_get = async function (req, res, next) {
     // res.json({
     //     review: mockReviews, user_review_id: null
     // });
+=======
+    let token = req.headers.authorization;
+    let userId = 131072;
+    let user_review;
+
+    console.log('Getting reviews',
+        'for book ASIN=' + bookASIN,
+        'with limit=' + limit,
+        'and offset=' + offset);
+
+    // check valid asin and asin exists in db
+    if (!asin_regex.test(bookASIN) || !await Book.findOne({ asin: bookASIN })) {
+        res.status(400)
+            .send({
+                success: 0,
+                error_type: 0,
+                error_msg: "Invalid asin or asin does not exist"
+            });
+        return;
+    }
+
+    // each page > 100 records, or total > 1000 record
+    if (limit > 100 || offset + limit > 1000) {
+        res.status(400)
+            .send({
+                success: 0,
+                error_type: 1,
+                error_msg: "limit must less than 100, offset + limit must <= 1000"
+            });
+        return;
+    };
+
+    // invalid token
+    if (token && !token.startsWith("Bearer ")) {
+        res.status(401).send({
+            success: 0,
+            error_type: 2,
+            error_message: "failed to authenticate user."
+        });
+        return;
+    }
+
+    // find user's review if exists.
+    if (token) {
+        token = token.substring(7, token.length);
+        try {
+            userId = jwt.verify(token, authentication_secret).user;
+        } catch (err) {
+            res.status(401).send({
+                success: 0,
+                error_type: 2,
+                error_message: "failed to authenticate user."
+            });
+            return;
+        }
+        // find user's review
+        user_review = await Review.findOne({
+            where: {
+                reviewerId: userId,
+                asin: bookASIN
+            },
+            include: [{
+                model: User,
+                attributes: ['name'],
+                required: true
+            }]
+        });
+    };
+
+    // find reviews
+    let reviews = await Review.findAll({
+        where: { asin: bookASIN },
+        include: [{
+            model: User,
+            attributes: ['name'],
+            required: true
+        }],
+        limit: limit,
+        offset: offset,
+        subQuery: false,
+    });
+    res.send({
+        success: 1,
+        reviews: reviews,
+        user_review: user_review
+    })
+>>>>>>> review_user_backend
 };
 
 // Handle review create on POST.
@@ -56,7 +143,7 @@ exports.review_create_post = async function (req, res) {
         return;
     }
 
-    // *** COMMENT OUT THIS PART FOR EASIER DEVELEPMENT ***
+    // invalid token
     if (!token || !token.startsWith("Bearer ")) {
         res.status(401).send({
             success: 0,
@@ -66,6 +153,7 @@ exports.review_create_post = async function (req, res) {
         return;
     }
 
+    // find user's id
     token = token.substring(7, token.length);
     try {
         userId = jwt.verify(token, authentication_secret).user;
@@ -77,8 +165,18 @@ exports.review_create_post = async function (req, res) {
         });
         return;
     }
-    // *** TILL HERE *** //
 
+    let book_to_be_review = await Book.findOne({ asin: bookASIN });
+    // check valid asin and asin exists in db
+    if (!asin_regex.test(bookASIN) || !book_to_be_review) {
+        res.status(400)
+            .send({
+                success: 0,
+                error_type: 2,
+                error_msg: "Invalid asin or asin does not exist"
+            });
+        return;
+    }
 
     // Create a new Reivew
     let review = {
@@ -91,6 +189,7 @@ exports.review_create_post = async function (req, res) {
 
     // Save Review in the database
     console.log('Posting review for book ASIN=' + bookASIN);
+<<<<<<< HEAD
     try {
         let saved_review = await Review.create(review)
         let book_reviewed = await Book.findOne({ asin: bookASIN });
@@ -122,11 +221,43 @@ exports.review_create_post = async function (req, res) {
         });
         return;
     }
+=======
+    let saved_review = await Review.create(
+        review,
+        {
+            include: [{
+                model: User,
+                attributes: ['name'],
+                required: true
+            }]
+        });
+    let new_average_rating = (book_to_be_review.rating_total + rating) / (book_to_be_review.review_number + 1);
+    let updated_book = await Book.findOneAndUpdate(
+        {
+            asin: bookASIN
+        },
+        {
+            $inc: {
+                review_number: 1,
+                rating_total: rating
+            },
+            $set: {
+                rating_average: new_average_rating
+            }
+        },
+        { new: true }
+    );
+    res.json({
+        success: 1,
+        book: updated_book,
+        review: saved_review
+    });
+>>>>>>> review_user_backend
 };
 
 
 // Handle review update on POST.
-exports.review_update_post = function (req, res) {
+exports.review_update_post = async function (req, res) {
     let reviewId = req.params.reviewid;
     let bookASIN = req.params.asin;
     let token = req.headers.authorization;
@@ -135,14 +266,18 @@ exports.review_update_post = function (req, res) {
     let review_text = req.body.reviewText;
     let userId = 131072;
 
+<<<<<<< HEAD
     if (!bookASIN || !rating || !summary || !review_text) {
+=======
+    if (!bookASIN || !reviewId || !rating || !summary || !review_text) {
+>>>>>>> review_user_backend
         res.status(400).send({
             success: 0,
             error_type: 0,
             error_message: "Missing required fields."
         });
         return;
-    }
+    };
 
     // *** COMMENT OUT THIS PART FOR EASIER DEVELEPMENT ***
     if (!token || !token.startsWith("Bearer ")) {
@@ -152,7 +287,7 @@ exports.review_update_post = function (req, res) {
             error_message: "failed to authenticate user."
         });
         return;
-    }
+    };
 
     token = token.substring(7, token.length);
     try {
@@ -164,67 +299,84 @@ exports.review_update_post = function (req, res) {
             error_message: "failed to authenticate user."
         });
         return;
-    }
+    };
 
     // *** TILL HERE ***
 
-    const review = {
-        summary: summary,
-        reviewText: review_text,
-        rating: rating
-    }
-    Review.update(req.body, {
-        where: { reviewId: reviewId }
-    }).then(num => {
-        if (num == 1) {
-            res.send({
-                success: 1,
-                updated_review: mock_user_review,
-            });
-        } else {
-            res.status(500).send({
+    let book_to_be_review = await Book.findOne({ asin: bookASIN });
+    // check valid asin and asin exists in db
+    if (!asin_regex.test(bookASIN) || !book_to_be_review) {
+        res.status(400)
+            .send({
                 success: 0,
-                error_type: 1,
-                error_message: `Cannot update Review with id=${reviewId}. Maybe Review was not found or req.body is empty!`
+                error_type: 2,
+                error_msg: "Invalid asin or asin does not exist"
             });
-        }
-    })
-        .catch(err => {
-            res.status(500).send({
-                success: 0,
-                error_type: 1,
-                error_message: "Error updating Review with id=" + reviewId
-            });
+        return;
+    };
+
+    let old_review = await Review.findOne({ where: { reviewId: reviewId } });
+    if (!old_review) {
+        res.status(400).send({
+            success: 0,
+            error_type: 3,
+            error_msg: "review id does not exist"
         });
+    };
+
+    // update book review info
+    let updated_book = await Book.findOneAndUpdate(
+        {
+            asin: bookASIN
+        },
+        {
+            $inc: {
+                rating_total: rating - old_review.rating
+            },
+            $set: {
+                rating_average: (book_to_be_review.rating_total + rating - old_review.rating) / book_to_be_review.review_number
+            }
+        },
+        { new: true }
+    );
+
+    // update review itself
+    old_review.summary = summary;
+    old_review.reviewText = review_text;
+    old_review.rating = rating;
+    await old_review.save();
+    res.send({
+        success: 1,
+        updated_book: updated_book,
+        updated_review: old_review
+    });
 };
 
 // Handle upvote review on POST.
-exports.review_upvote_post = function (req, res) {
+exports.review_upvote_post = async function (req, res) {
     // *** 983033 CAN BE A DUMMY REVIEW ID ***
     let reviewId = req.params.reviewid || 983033;
-
-    let review = {
-        helpful: db.Sequelize.literal('helpful + 1')
-    }
-
-    Review.update(review, {
-        where: { reviewId: reviewId }
-    }).then(num => {
-        if (num == 1) {
-            res.send({
-                message: "Reviews was updated successfully."
-            });
-        } else {
-            res.send({
-                message: `Cannot update Review with id=${reviewId}. Maybe Review was not found or req.body is empty!`
-            });
-        }
-    })
-        .catch(err => {
-            console.log(err);
-            res.status(500).send({
-                message: "Error updating Review with id=" + reviewId
-            });
+    let review = await Review.findOne({ where: { reviewId: reviewId } });
+    if (!review) {
+        res.status(400).send({
+            success: 0,
+            error_type: 0,
+            error_msg: "review id does not exist"
         });
-    console.log('upvoting review ' + reviewId);
+    };
+
+    let review_update_query = {
+        helpful: db.Sequelize.literal('helpful + 1')
+    };
+    let num = await Review.update(
+        review_update_query,
+        {
+            where: { reviewId: reviewId },
+        }
+    );
+    let updated_review = await Review.findOne({ where: { reviewId: reviewId } });
+    res.send({
+        success: 1,
+        updated_review: updated_review
+    });
 };

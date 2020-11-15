@@ -4,6 +4,10 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.INTEGER,
       primaryKey: true,
       autoIncrement: true
+    //   references: {
+    //     model: 'review', // 'review' refers to table name
+    //     key: 'reviewerId', // 'reviewerId' refers to column name in persons table
+    //  }
     },
     name: {
       type: Sequelize.CHAR

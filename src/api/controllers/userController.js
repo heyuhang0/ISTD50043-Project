@@ -1,9 +1,7 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const db = require("../models/sequelizeIndex");
-const { Typography } = require('antd');
 const User = db.user;
-const Op = db.Sequelize.Op;
 const hash_key = process.env.PASSWORD_HASH_KEY;
 const authentication_secret = process.env.AUTHENTICATION_SECRET;
 const email_regex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -25,20 +23,10 @@ exports.login_post = async function (req, res) {
 
     //find user in db
     let user;
-    try{
-        user = await User.findOne({
-            attributes: ["userId", "name", "email","password"],
-            where: { email: email }
-        });
-        console.log(user);
-    } catch(err){
-        console.log(err);
-        res.status(500).send({
-            success: 0,
-            error_type: -1,
-            error_msg: "internal error"
-        });
-    };
+    user = await User.findOne({
+        attributes: ["userId", "name", "email", "password"],
+        where: { email: email }
+    });
 
     // user not found in db
     if (!user) {
@@ -61,7 +49,7 @@ exports.login_post = async function (req, res) {
             });
         return;
     }
-    const token = jwt.sign({ user: user.userId}, authentication_secret);
+    const token = jwt.sign({ user: user.userId }, authentication_secret);
     res.json({
         success: 1,
         token: token
@@ -76,7 +64,7 @@ exports.register_post = async function (req, res, next) {
     let password2 = req.body.password2;
 
     // Incorrect format
-    if (!email || !password || !password2|| !name) {
+    if (!email || !password || !password2 || !name) {
         res.status(400)
             .send({
                 success: 0,
@@ -121,20 +109,10 @@ exports.register_post = async function (req, res, next) {
 
     //find user in db
     let user;
-    try{
-        user = await User.findOne({
-            attributes: ["userId", "name", "email"],
-            where: { email: email }
-        });
-        console.log(user);
-    } catch(err){
-        console.log(err);
-        res.status(500).send({
-            success: 0,
-            error_type: -1,
-            error_msg: "internal error"
-        });
-    };
+    user = await User.findOne({
+        attributes: ["userId", "name", "email"],
+        where: { email: email }
+    });
 
     if (user) {
         res.status(400)
@@ -147,23 +125,14 @@ exports.register_post = async function (req, res, next) {
     }
 
     //add user to db
-    const hash_password = bcrypt.hashSync(password);
+    const hash_password = bcrypt.hashSync(password, hash_key);
     let created_user;
-    try{
-        created_user = await User.create({
-            email: email,
-            password: hash_password,
-            name: name
-        });
-    }catch(err){
-        console.log(err);
-        res.status(500).send({
-            success: 0,
-            error_type: -1,
-            error_msg: "internal error"
-        });
-    }
-    
+    created_user = await User.create({
+        email: email,
+        password: hash_password,
+        name: name
+    });
+
     const token = jwt.sign({ user: created_user.userId }, authentication_secret);
     res.json({
         success: 1,
