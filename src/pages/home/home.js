@@ -3,9 +3,9 @@ import { withRouter } from 'react-router-dom';
 import { Layout, Row, Col } from 'antd';
 import NewBookCard from '../../components/NewBookCard/NewBookCard'
 import GlobalFooter from '../../components/GlobalFooter/GlobalFooter'
+import UserCard from '../../components/User/UserCard'
 import BooksCard from './components/BooksCard/BooksCard'
 import SearchBox from './components/SearchBox/SearchBox'
-import UserCard from './components/UserCard/UserCard'
 import './home.less';
 
 const { Header, Content } = Layout;

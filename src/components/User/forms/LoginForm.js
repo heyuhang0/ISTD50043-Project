@@ -1,25 +1,25 @@
 import React from 'react';
-import { Input, Button, Form } from 'antd';
+import { Input, Button, Form, message } from 'antd';
+import axios from 'axios';
 
 
-function SignUpForm(props) {
+function LoginForm(props) {
+  function onLogin(form) {
+    axios.post('/api/users/login', form)
+      .then(res => {
+        props.onLogin(res.data.token);
+      })
+      .catch(error => {
+        console.error(error);
+        message.error(error.response ?
+          error.response.data.error_msg : "Unknown error");
+      });
+  }
   return (
     <Form
       {...props.layout}
-      onFinish={props.onFinish}
+      onFinish={onLogin}
     >
-      <Form.Item
-        name="name"
-        rules={[
-          {
-            required: true,
-            message: 'Please input your name',
-          },
-        ]}
-      >
-        <Input placeholder="Name" />
-      </Form.Item>
-
       <Form.Item
         name="email"
         rules={[
@@ -50,11 +50,11 @@ function SignUpForm(props) {
 
       <Form.Item>
         <Button type="primary" htmlType="submit" style={{ width: "100%" }}>
-          Sign Up
+          Login
         </Button>
       </Form.Item>
     </Form>
   );
 }
 
-export default SignUpForm;
+export default LoginForm;

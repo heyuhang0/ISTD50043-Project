@@ -11,16 +11,11 @@ class UserCard extends React.Component {
       tab: "Login",
     };
 
-    this.onSignUp = this.onSignUp.bind(this);
     this.onLogin = this.onLogin.bind(this);
   }
 
-  onLogin(form) {
-    console.log('Login:', form);
-  }
-
-  onSignUp(form) {
-    console.log('Sign Up:', form);
+  onLogin(token) {
+    console.log('Token:', token);
   }
 
   render() {
@@ -49,8 +44,8 @@ class UserCard extends React.Component {
         onTabChange={(key) => this.setState({ tab: key })}
       >
         {this.state.tab === "Login" ?
-          <LoginForm onFinish={this.onLogin} layout={layout} /> :
-          <SignUpForm onFinish={this.onSignUp} layout={layout} />
+          <LoginForm onLogin={this.onLogin} layout={layout} /> :
+          <SignUpForm onLogin={this.onLogin} layout={layout} />
         }
       </Card>
     )
