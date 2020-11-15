@@ -90,6 +90,10 @@ def create_app_instance(ec2, app_name, config):
                     'Key': 'app_name',
                     'Value': app_name
                 },
+                {
+                    'Key': 'Name',
+                    'Value': app_name
+                }
             ]
         }],
         KeyName=config['key_name']
@@ -199,6 +203,12 @@ def connect_or_setup_instance(app_name, username, ssh_key, instance_config):
 
     logger.info(f'Running {os.path.basename(setup_script)} on the new instance:')
     _, stdout, stderr = ssh.exec_command(' && '.join([
+        '; '.join([
+            "while [ ! -f /var/lib/cloud/instance/boot-finished ]",
+            "do echo 'Waiting for cloud-init...'",
+            "sleep 1",
+            "done"
+        ]),
         command_to_convert_CRLF(remote_path),
         f'chmod +x {remote_path}',
         f'sudo {remote_path}'
