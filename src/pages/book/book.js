@@ -20,7 +20,7 @@ function Book(props) {
           <Col xs={16} sm={16} md={16} lg={16}>
             <BookCard url={`/api/books/${asin}`} />
             <Card title="Start your review here">
-              <AddReview title="Start your review" url={`/api/books/${asin}/addreview`} />
+              <AddReview title="Start your review" asin={`${asin}`} />
             </Card>
             <Card title="Community Reviews">
               <ReviewComment url={`/api/books/${asin}/reviews`} />

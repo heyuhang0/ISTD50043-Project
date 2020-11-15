@@ -31,7 +31,11 @@ exports.review_for_a_book_get = function (req, res, next) {
 
 // Handle review create on POST.
 exports.review_create_post = function (req, res) {
-    let bookASIN = req.query.asin;
+    console.log("Handle add review")
+    // console.log(req.query)
+    // console.log(req.body)
+    // console.log(req)
+    let bookASIN = req.body.asin;
 
     // Create a new Reivew
     const review = {
