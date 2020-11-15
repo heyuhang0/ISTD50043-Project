@@ -72,7 +72,7 @@ class ReviewComment extends React.Component {
     componentDidMount() {
         axios.get(this.props.url).then((res) => {
             this.setState({
-                reviews: res.data,
+                reviews: res.data.reviews,
                 loading: false
             });
         });
