@@ -2,6 +2,8 @@ import React from 'react';
 import { Comment, Form, Button, List, Input, Rate, Modal } from 'antd';
 import moment from 'moment';
 import './AddReview.less';
+import axios from 'axios';
+import { useParams } from 'react-router-dom';
 
 const { TextArea } = Input;
 
@@ -77,6 +79,14 @@ class AddReview extends React.Component {
   handleSubmit = () => {
     if (!this.state.submitted) {
       console.log(this.state)
+      // axios
+      //   .post(`/api/books/${asin}/reviews`, this.state)
+      //   .then(res => {
+      //     console.log(res);
+      //   })
+      //   .catch(err =>
+      //     console.log(err))
+
       if (!this.state.value) {
         return;
       }
@@ -86,7 +96,7 @@ class AddReview extends React.Component {
       });
 
       setTimeout(() => {
-        console.log(this.state)
+        // console.log(this.state)
         this.setState({
           submitting: false,
           value: '',
@@ -109,14 +119,14 @@ class AddReview extends React.Component {
       }, 1000);
     };
     if (this.state.submitted) {
-      console.log(this.state.submitted)
-      console.log("You have submitted once!")
+      // console.log(this.state.submitted)
+      // console.log("You have submitted once!")
       this.showModal();
     };
   };
 
   handleChange = e => {
-    console.log(e.target.value)
+    // console.log(e.target.value)
     this.setState({
       value: e.target.value,
     });
@@ -130,7 +140,7 @@ class AddReview extends React.Component {
 
   render() {
     const { comments, submitting, value, rate, submitted, visible } = this.state;
-    console.log(submitted)
+    // console.log(submitted)
 
     return (
       <>

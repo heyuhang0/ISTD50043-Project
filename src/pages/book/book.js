@@ -1,5 +1,5 @@
 import React from 'react';
-import { Layout, Row, Col } from 'antd';
+import { Layout, Row, Col, Card } from 'antd';
 import { useParams, withRouter } from 'react-router-dom'
 import BookCard from './components/BookCard/BookCard'
 import './book.less';
@@ -19,10 +19,12 @@ function Book(props) {
         <Row className="book-row">
           <Col xs={16} sm={16} md={16} lg={16}>
             <BookCard url={`/api/books/${asin}`} />
-            <h3>Start your review of {asin}</h3>
-            <AddReview title="Start your review" url={`/api/books/${asin}/addreview`} />
-            <h3>Community Reviews</h3>
-            <ReviewComment title="Community Reviews" url={`/api/books/${asin}/reviews`} />
+            <Card title="Start your review here">
+              <AddReview title="Start your review" url={`/api/books/${asin}/addreview`} />
+            </Card>
+            <Card title="Community Reviews">
+              <ReviewComment url={`/api/books/${asin}/reviews`} />
+            </Card>
           </Col>
           <Col xs={8} sm={8} md={8} lg={8}>
             <RecommendationCard title="People also viewed" url={`/api/books/${asin}/recommentations`} />
