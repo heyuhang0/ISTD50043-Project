@@ -3,11 +3,8 @@ import { Card, Button } from 'antd';
 import { LogoutOutlined } from '@ant-design/icons';
 import LoginForm from './forms/LoginForm';
 import SignUpForm from './forms/SignUpForm';
-import Cookies from 'universal-cookie';
 import axios from 'axios';
 import './UserCard.less';
-
-const cookies = new Cookies();
 
 class UserCard extends React.Component {
   constructor(props) {
@@ -22,7 +19,7 @@ class UserCard extends React.Component {
   }
 
   reloadToken = () => {
-    const token = cookies.get('token');
+    const token = window.localStorage.token;
     if (!token) {
       this.setState({ loading: false, username: null });
       return;
@@ -39,13 +36,13 @@ class UserCard extends React.Component {
   }
 
   onLogin = (token) => {
-    cookies.set('token', token, { path: '/' });
+    window.localStorage.token = token;
     axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
     this.reloadToken();
   }
 
   onSignOut = () => {
-    cookies.remove('token', { path: '/' });
+    window.localStorage.removeItem('token');
     this.setState({ loading: false, username: null, tab: 'Login' });
   }
 

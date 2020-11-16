@@ -1,13 +1,12 @@
 import React, { Suspense, lazy } from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
-import Cookies from 'universal-cookie';
 import axios from 'axios';
 import Loading from './components/Loading/Loading';
 
-const token = new Cookies().get('token');
-if (token) {
-  axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+if (window.localStorage.token) {
+  axios.defaults.headers.common['Authorization'] =
+    'Bearer ' + window.localStorage.token;
 }
 
 const Home = lazy(() => import('./pages/home/home'));
