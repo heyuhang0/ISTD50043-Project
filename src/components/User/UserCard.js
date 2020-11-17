@@ -37,7 +37,6 @@ class UserCard extends React.Component {
 
   onLogin = (token) => {
     window.localStorage.token = token;
-    axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
     this.reloadToken();
   }
 
