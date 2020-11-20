@@ -15,11 +15,37 @@ exports.review_for_a_book_get = async function (req, res) {
     let token = req.headers.authorization;
     let userId = 131072;
     let user_review;
-
+    let sort_statement;
+    switch (req.query.sort){
+        case 'create_desc':
+            sort_statement = ['createdAt', 'DESC'];
+            break;
+        case 'create_asc':
+            sort_statement = ['createdAt', 'ASC'];
+            break;
+        case 'helpful_desc':
+            sort_statement = ['helpful', 'DESC'];
+            break;
+        case 'helpful_asc':
+            sort_statement = ['helpful', 'ASC'];
+            break;
+        case 'rating_desc':
+            sort_statement = ['rating', 'DESC'];
+            break;
+        case 'rating_asc':
+            sort_statement = ['rating', 'ASC'];
+            break;
+        default:
+            sort_statement = ['helpful', 'DESC'];
+            break;
+        
+    }
+    
     console.log('Getting reviews',
         'for book ASIN=' + bookASIN,
         'with limit=' + limit,
-        'and offset=' + offset);
+        'and offset=' + offset,
+        'sort by='+ sort_statement );
 
     // check valid asin and asin exists in db
     if (!asin_regex.test(bookASIN) || !await Book.findOne({ asin: bookASIN })) {
@@ -91,6 +117,7 @@ exports.review_for_a_book_get = async function (req, res) {
             attributes: ['name', 'email'],
             required: true
         }],
+        order: [sort_statement],
         limit: limit,
         offset: offset,
         subQuery: false,
@@ -215,7 +242,6 @@ exports.review_update_post = async function (req, res) {
     let rating = Number(req.body.rating);
     let summary = req.body.summary;
     let review_text = req.body.reviewText;
-    let userId = 131072;
 
     if (!bookASIN || !reviewId || !rating || !summary || !review_text) {
         res.status(400).send({
