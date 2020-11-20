@@ -2,8 +2,10 @@
 const jwt = require('jsonwebtoken');
 const Book = require('../models/book');
 const db = require("../models/sequelizeIndex");
+
 const Review = db.review;
 const User = db.user;
+
 const authentication_secret = process.env.AUTHENTICATION_SECRET;
 const asin_regex = /(B0|BT)([0-9A-Z]{8})$/;
 
@@ -13,9 +15,11 @@ exports.review_for_a_book_get = async function (req, res) {
     let limit = Number(req.query.limit) || 20;
     let offset = Number(req.query.offset) || 0;
     let token = req.headers.authorization;
-    let userId = 131072;
+    let userId;
     let user_review;
     let sort_statement;
+
+    // sort options
     switch (req.query.sort){
         case 'create_desc':
             sort_statement = ['createdAt', 'DESC'];
@@ -136,7 +140,7 @@ exports.review_create_post = async function (req, res) {
     let rating = Number(req.body.rating);
     let summary = req.body.summary;
     let review_text = req.body.reviewText;
-    let userId = 131072;
+    let userId;
 
     if (!bookASIN || !rating || !summary || !review_text) {
         res.status(400).send({
