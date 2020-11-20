@@ -57,7 +57,10 @@ exports.review_for_a_book_get = async function (req, res) {
     if (token) {
         token = token.substring(7, token.length);
         try {
-            userId = jwt.verify(token, authentication_secret).user;
+            this_user = jwt.verify(token, authentication_secret);
+            userId = this_user.user;
+            email = this_user.email;
+            name = this_user.name
         } catch (err) {
             res.status(401).send({
                 success: 0,
@@ -74,7 +77,7 @@ exports.review_for_a_book_get = async function (req, res) {
             },
             include: [{
                 model: User,
-                attributes: ['name'],
+                attributes: ['name', 'email'],
                 required: true
             }]
         });
@@ -85,7 +88,7 @@ exports.review_for_a_book_get = async function (req, res) {
         where: { asin: bookASIN },
         include: [{
             model: User,
-            attributes: ['name'],
+            attributes: ['name', 'email'],
             required: true
         }],
         limit: limit,
@@ -130,7 +133,10 @@ exports.review_create_post = async function (req, res) {
     // find user's id
     token = token.substring(7, token.length);
     try {
-        userId = jwt.verify(token, authentication_secret).user;
+        this_user = jwt.verify(token, authentication_secret);
+        userId = this_user.user;
+        email = this_user.email;
+        name = this_user.name
     } catch (err) {
         res.status(401).send({
             success: 0,
@@ -168,7 +174,7 @@ exports.review_create_post = async function (req, res) {
         {
             include: [{
                 model: User,
-                attributes: ['name'],
+                attributes: ['name', 'email'],
                 required: true
             }]
         });
@@ -191,7 +197,12 @@ exports.review_create_post = async function (req, res) {
     res.json({
         success: 1,
         book: updated_book,
-        review: saved_review
+        review: saved_review,
+        user:{
+            userId: userId,
+            name: name,
+            email: email
+        }
     });
 };
 
@@ -227,7 +238,10 @@ exports.review_update_post = async function (req, res) {
 
     token = token.substring(7, token.length);
     try {
-        userId = jwt.verify(token, authentication_secret).user;
+        this_user = jwt.verify(token, authentication_secret);
+        userId = this_user.user;
+        email = this_user.email;
+        name = this_user.name
     } catch (err) {
         res.status(401).send({
             success: 0,
@@ -251,7 +265,14 @@ exports.review_update_post = async function (req, res) {
         return;
     };
 
-    let old_review = await Review.findOne({ where: { reviewId: reviewId } });
+    let old_review = await Review.findOne({ 
+        where: { reviewId: reviewId },
+        include: [{
+            model: User,
+            attributes: ['name', 'email'],
+            required: true
+        }]
+    });
     if (!old_review) {
         res.status(400).send({
             success: 0,

@@ -49,9 +49,18 @@ exports.login_post = async function (req, res) {
             });
         return;
     }
-    const token = jwt.sign({ user: user.userId }, authentication_secret);
+    const token = jwt.sign(
+        { 
+            userId: user.userId,
+            email: user.email,
+            name: user.name
+        }, 
+        authentication_secret);
     res.json({
         success: 1,
+        userId: user.userId,
+        email: user.email,
+        name: user.name,
         token: token
     });
 };
@@ -133,9 +142,18 @@ exports.register_post = async function (req, res, next) {
         name: name
     });
 
-    const token = jwt.sign({ user: created_user.userId }, authentication_secret);
+    const token = jwt.sign(
+        { 
+            user: created_user.userId,
+            email: email,
+            name: name
+        }, 
+        authentication_secret);
     res.json({
         success: 1,
+        userId: created_user.userId,
+        email: email,
+        name: name,
         token: token
     });
 };
@@ -152,7 +170,10 @@ exports.current_user_get = async function (req, res) {
     };
     token = token.substring(7, token.length);
     try {
-        userId = jwt.verify(token, authentication_secret).user;
+        user_object = jwt.verify(token, authentication_secret);
+        userId = user_object.user;
+        name = user_object.name;
+        email = user_object.email;
     } catch (err) {
         res.status(401).send({
             success: 0,
@@ -161,11 +182,5 @@ exports.current_user_get = async function (req, res) {
         });
         return;
     };
-
-    let user = await User.findOne({
-        attributes: ["userId", "name", "email"],
-        where: { userId: userId }
-    });
-
-    res.json(user);
+    res.json({userId: userId, name: name, email:email });
 }
