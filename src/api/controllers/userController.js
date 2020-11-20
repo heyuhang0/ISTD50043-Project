@@ -7,9 +7,15 @@ const authentication_secret = process.env.AUTHENTICATION_SECRET;
 const email_regex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 const password_regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
 
+/**
+ * Login user.
+ * @param {*} req body: email, password
+ * @param {*} res user info, token OR error type, error message
+ */
 exports.login_post = async function (req, res) {
     let email = req.body.email;
     let password = req.body.password;
+    console.log("Logging in user with email=" + email);
     // Incorrect format
     if (!email || !password || !email_regex.test(email) || !password_regex.test(password)) {
         res.status(400)
@@ -50,11 +56,11 @@ exports.login_post = async function (req, res) {
         return;
     }
     const token = jwt.sign(
-        { 
+        {
             userId: user.userId,
             email: user.email,
             name: user.name
-        }, 
+        },
         authentication_secret);
     res.json({
         success: 1,
@@ -65,13 +71,21 @@ exports.login_post = async function (req, res) {
     });
 };
 
-
-exports.register_post = async function (req, res, next) {
+/**
+ * Register a user.
+ * @param {*} req body: email, name, password, confirmed password
+ * @param {*} res user info, token OR error type, error message
+ */
+exports.register_post = async function (req, res) {
     let email = req.body.email;
     let name = req.body.name;
     let password = req.body.password;
     let password2 = req.body.password2;
 
+    console.log(
+        "Registering user with email=" + email,
+        "name=" + name
+    );
     // Incorrect format
     if (!email || !password || !password2 || !name) {
         res.status(400)
@@ -143,11 +157,11 @@ exports.register_post = async function (req, res, next) {
     });
 
     const token = jwt.sign(
-        { 
+        {
             user: created_user.userId,
             email: email,
             name: name
-        }, 
+        },
         authentication_secret);
     res.json({
         success: 1,
@@ -158,7 +172,13 @@ exports.register_post = async function (req, res, next) {
     });
 };
 
+/**
+ * Get user's information using token
+ * @param {*} req headers: token
+ * @param {*} res user's information
+ */
 exports.current_user_get = async function (req, res) {
+    console.log("Getting current user's information");
     let token = req.headers.authorization;
     if (!token || !token.startsWith("Bearer ")) {
         res.status(401).send({
@@ -182,5 +202,5 @@ exports.current_user_get = async function (req, res) {
         });
         return;
     };
-    res.json({userId: userId, name: name, email:email });
+    res.json({ userId: userId, name: name, email: email });
 }

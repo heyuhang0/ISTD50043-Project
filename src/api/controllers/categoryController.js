@@ -1,7 +1,11 @@
 
-var Category = require('../models/category');
-mockdata = require('../helpers/mockdata');
+const Category = require('../models/category');
 
+/**
+ * Get all categories
+ * @param {*} req 
+ * @param {*} res category list
+ */
 exports.all_categories_get = async function (req, res) {
   console.log("getting all categories");
   let categories = await Category.find();
@@ -11,6 +15,11 @@ exports.all_categories_get = async function (req, res) {
   });
 }
 
+/**
+ * Get suggested categoreis
+ * @param {*} req 
+ * @param {*} res suggested category list
+ */
 exports.suggested_categories_get = async function (req, res) {
   console.log("getting suggested categories");
   let suggested_categories = await Category.find()

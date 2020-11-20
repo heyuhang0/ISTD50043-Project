@@ -9,7 +9,11 @@ const User = db.user;
 const authentication_secret = process.env.AUTHENTICATION_SECRET;
 const asin_regex = /(B0|BT)([0-9A-Z]{8})$/;
 
-// get review for one book
+/**
+ * Get review for one book
+ * @param {*} req params: asin; query: limit, offset, sort; headers: authorization
+ * @param {*} res review list, user's review OR error type, error message
+ */
 exports.review_for_a_book_get = async function (req, res) {
     let bookASIN = req.params.asin;
     let limit = Number(req.query.limit) || 20;
@@ -19,8 +23,8 @@ exports.review_for_a_book_get = async function (req, res) {
     let user_review;
     let sort_statement;
 
-    // sort options
-    switch (req.query.sort){
+    // sort option construction
+    switch (req.query.sort) {
         case 'create_desc':
             sort_statement = ['createdAt', 'DESC'];
             break;
@@ -42,14 +46,13 @@ exports.review_for_a_book_get = async function (req, res) {
         default:
             sort_statement = ['helpful', 'DESC'];
             break;
-        
     }
-    
+
     console.log('Getting reviews',
         'for book ASIN=' + bookASIN,
         'with limit=' + limit,
         'and offset=' + offset,
-        'sort by='+ sort_statement );
+        'sort by=' + sort_statement);
 
     // check valid asin and asin exists in db
     if (!asin_regex.test(bookASIN) || !await Book.findOne({ asin: bookASIN })) {
@@ -133,7 +136,12 @@ exports.review_for_a_book_get = async function (req, res) {
     })
 };
 
-// Handle review create on POST.
+/**
+ * Create a review
+ * @param {*} req params: asin; headers: authorization;
+ * body: raitng, summary, reviewText;
+ * @param {*} res success, review details, user info; OR error type, error message;
+ */
 exports.review_create_post = async function (req, res) {
     let bookASIN = req.params.asin;
     let token = req.headers.authorization;
@@ -199,7 +207,12 @@ exports.review_create_post = async function (req, res) {
     };
 
     // Save Review in the database
-    console.log('Posting review for book ASIN=' + bookASIN);
+    console.log(
+        'Posting review for book ASIN=' + bookASIN,
+        'userId=' + userId,
+        'with rating=' + rating,
+        'and summary=' + summary,
+        'and text=' + review_text);
     let saved_review = await Review.create(
         review,
         {
@@ -229,7 +242,7 @@ exports.review_create_post = async function (req, res) {
         success: 1,
         book: updated_book,
         review: saved_review,
-        user:{
+        user: {
             userId: userId,
             name: name,
             email: email
@@ -238,7 +251,12 @@ exports.review_create_post = async function (req, res) {
 };
 
 
-// Handle review update on POST.
+/**
+ * Update the revie
+ * @param {*} req params: asin, reviewid; headers: authorization;
+ * body: rating, summary, text;
+ * @param {*} res success, review details; OR error type, error message
+ */
 exports.review_update_post = async function (req, res) {
     let reviewId = req.params.reviewid;
     let bookASIN = req.params.asin;
@@ -256,6 +274,7 @@ exports.review_update_post = async function (req, res) {
         return;
     };
 
+    // TODO: delete comment after frontend is ready
     // *** COMMENT OUT THIS PART FOR EASIER DEVELEPMENT ***
     if (!token || !token.startsWith("Bearer ")) {
         res.status(401).send({
@@ -295,7 +314,7 @@ exports.review_update_post = async function (req, res) {
         return;
     };
 
-    let old_review = await Review.findOne({ 
+    let old_review = await Review.findOne({
         where: { reviewId: reviewId },
         include: [{
             model: User,
@@ -312,6 +331,13 @@ exports.review_update_post = async function (req, res) {
     };
 
     // update book review info
+    console.log(
+        'Updating review with reviewId=' + reviewId,
+        'for book ASIN=' + bookASIN,
+        'userId=' + userId,
+        'with rating=' + rating,
+        'and summary=' + summary,
+        'and text=' + review_text);
     let updated_book = await Book.findOneAndUpdate(
         {
             asin: bookASIN
@@ -339,10 +365,17 @@ exports.review_update_post = async function (req, res) {
     });
 };
 
-// Handle upvote review on POST.
+/**
+ * Upvote a review
+ * @param {*} req params: reviewId
+ * @param {*} res success, review details; OR error type, error message
+ */
 exports.review_upvote_post = async function (req, res) {
     // *** 983033 CAN BE A DUMMY REVIEW ID ***
+    // TODO: delete dummy reviewid after frontend is ready
     let reviewId = req.params.reviewid || 983033;
+    console.log('Upvoting review with reviewId=' + reviewId);
+
     let review = await Review.findOne({ where: { reviewId: reviewId } });
     if (!review) {
         res.status(400).send({
@@ -355,7 +388,7 @@ exports.review_upvote_post = async function (req, res) {
     let review_update_query = {
         helpful: db.Sequelize.literal('helpful + 1')
     };
-    let num = await Review.update(
+    await Review.update(
         review_update_query,
         {
             where: { reviewId: reviewId },
