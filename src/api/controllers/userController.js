@@ -45,7 +45,7 @@ exports.login_post = async function (req, res) {
     };
 
     // password incorrect
-    if (bcrypt.hashSync(password, 10) != user.password) {
+    if (bcrypt.hashSync(password, bcrypt.getSalt(user.password)) != user.password) {
         res.status(400)
             .send({
                 success: 0,
