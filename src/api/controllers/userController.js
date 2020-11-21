@@ -2,7 +2,6 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const db = require("../models/sequelizeIndex");
 const User = db.user;
-const hash_key = process.env.PASSWORD_HASH_KEY;
 const authentication_secret = process.env.AUTHENTICATION_SECRET;
 const email_regex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 const password_regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
@@ -46,7 +45,7 @@ exports.login_post = async function (req, res) {
     };
 
     // password incorrect
-    if (bcrypt.hashSync(password, hash_key) != user.password) {
+    if (bcrypt.hashSync(password, 10) != user.password) {
         res.status(400)
             .send({
                 success: 0,
@@ -148,7 +147,7 @@ exports.register_post = async function (req, res) {
     }
 
     //add user to db
-    const hash_password = bcrypt.hashSync(password, hash_key);
+    const hash_password = bcrypt.hashSync(password, 10);
     let created_user;
     created_user = await User.create({
         email: email,
