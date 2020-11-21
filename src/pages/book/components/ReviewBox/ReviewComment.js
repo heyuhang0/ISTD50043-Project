@@ -5,20 +5,33 @@ import './ReviewComment.less';
 import { LikeFilled, LikeOutlined } from '@ant-design/icons';
 
 
-
 function ReviewItem(props) {
-    var liked = 0;
+
     const [likes, setLikes] = useState(props.review.helpful);
     const [action, setAction] = useState(null);
 
 
     const like = () => {
-        if (liked === 0) {
-            console.log("liked is ", liked)
+        console.log(action);
+        if (action != 'liked') {
+            axios
+                .post(`/api/books/${props.review.asin}/reviews/${props.review.reviewId}/upvote`,
+                    {
+                        reviewid: props.review.reviewId
+                    }
+                )
+                .then(res => {
+                    console.log(res);
+                })
+                .catch(err =>
+                    console.log(err))
+
+            // console.log("liked is ", liked)
             setLikes(likes + 1);
             // setDislikes(0);
             setAction('liked');
-            liked = 1;
+            // liked = true;
+            // console.log("liked is ", liked)
         }
     };
 
@@ -39,7 +52,7 @@ function ReviewItem(props) {
                 actions={actions}
                 author={
                     <div>
-                        <p>{props.review.reviewerName}</p>
+                        <p>Reviewer ID: {props.review.reviewerId}</p>
                         <Rate
                             allowHalf
                             disabled

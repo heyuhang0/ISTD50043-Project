@@ -2,6 +2,8 @@ import React from 'react';
 import { Comment, Form, Button, List, Input, Rate, Modal } from 'antd';
 import moment from 'moment';
 import './AddReview.less';
+import { withRouter } from 'react-router-dom';
+import axios from 'axios';
 
 const { TextArea } = Input;
 
@@ -13,7 +15,7 @@ const CommentList = ({ comments }) => (
   />
 );
 
-const Editor = ({ onChange, onSubmit, submitting, value, rate, onChangeRate, visible, handleOk, handleCancel }) => (
+const Editor = ({ onChange, onChangeSummary, onSubmit, submitting, summary, value, rate, onChangeRate, visible, handleOk, handleCancel }) => (
   <>
     <Form.Item>
       <Rate
@@ -22,7 +24,10 @@ const Editor = ({ onChange, onSubmit, submitting, value, rate, onChangeRate, vis
       />
     </Form.Item>
     <Form.Item>
-      <TextArea rows={4} onChange={onChange} value={value} />
+      <TextArea rows={1} placeholder="Summary of your review" onChange={onChangeSummary} value={summary} />
+    </Form.Item>
+    <Form.Item>
+      <TextArea rows={4} placeholder="Your full review" onChange={onChange} value={value} />
     </Form.Item>
     <Form.Item>
       <Button htmlType="submit" loading={submitting} onClick={onSubmit} type="primary">
@@ -47,6 +52,7 @@ class AddReview extends React.Component {
     this.state = {
       comments: [],
       submitting: false,
+      summary: '',
       value: '',
       rate: 0,
       submitted: false,
@@ -77,13 +83,21 @@ class AddReview extends React.Component {
   handleSubmit = () => {
     if (!this.state.submitted) {
       console.log(this.state)
-      // axios
-      //   .post(`/api/books/${asin}/reviews`, this.state)
-      //   .then(res => {
-      //     console.log(res);
-      //   })
-      //   .catch(err =>
-      //     console.log(err))
+      console.log(this.props.asin)
+      axios
+        .post(`/api/books/${this.props.asin}/reviews`,
+          {
+            asin: this.props.asin,
+            summary: this.state.summary,
+            reviewTest: this.state.value,
+            rating: this.state.rate,
+          }
+        )
+        .then(res => {
+          console.log(res);
+        })
+        .catch(err =>
+          console.log(err))
 
       if (!this.state.value) {
         return;
@@ -97,6 +111,7 @@ class AddReview extends React.Component {
         // console.log(this.state)
         this.setState({
           submitting: false,
+          summary: '',
           value: '',
           rate: 0,
           submitted: true,
@@ -108,7 +123,10 @@ class AddReview extends React.Component {
                   value={this.state.rate}
                 />
               </div>,
-              content: <p>{this.state.value}</p>,
+              content:
+                <div><p>{this.state.summary}</p>
+                  <p>{this.state.value}</p>
+                </div>,
               datetime: moment().fromNow(),
             },
             ...this.state.comments,
@@ -130,6 +148,13 @@ class AddReview extends React.Component {
     });
   };
 
+  handleChangeSummary = e => {
+    console.log(e.target.value)
+    this.setState({
+      summary: e.target.value,
+    });
+  };
+
   handleChangeRate = e => {
     this.setState({
       rate: e,
@@ -137,7 +162,7 @@ class AddReview extends React.Component {
   }
 
   render() {
-    const { comments, submitting, value, rate, visible } = this.state;
+    const { comments, submitting, summary, value, rate, submitted, visible } = this.state;
     // console.log(submitted)
 
     return (
@@ -146,9 +171,11 @@ class AddReview extends React.Component {
           content={
             <Editor
               onChange={this.handleChange}
+              onChangeSummary={this.handleChangeSummary}
               onChangeRate={this.handleChangeRate}
               onSubmit={this.handleSubmit}
               submitting={submitting}
+              summary={summary}
               value={value}
               rate={rate}
               visible={visible}
@@ -164,4 +191,4 @@ class AddReview extends React.Component {
   };
 };
 
-export default AddReview
+export default withRouter(AddReview)
