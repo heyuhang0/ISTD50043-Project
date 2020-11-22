@@ -440,13 +440,11 @@ def main():
         logger = logging.getLogger('@mongodb')
         instance = EC2Instance('mongodb', ssh_config, logger)
 
-        # terminate existing instance if required
-        if args.override and instance.exists:
-            logger.info('Terminating existing MongoDB instance')
-            instance.terminate()
+        if args.override or not instance.exists:
+            if instance.exists:
+                logger.info('Terminating existing MongoDB instance')
+                instance.terminate()
 
-        # only launch the instance if it does not exist
-        if not instance.exists:
             logger.info('Launching new MongoDB instance')
             instance.launch(
                 EC2Config(
@@ -481,13 +479,11 @@ def main():
         logger = logging.getLogger('@mysql')
         instance = EC2Instance('mysql', ssh_config, logger)
 
-        # terminate existing instance if required
-        if args.override and instance.exists:
-            logger.info('Terminating existing MySQL instance')
-            instance.terminate()
+        if args.override or not instance.exists:
+            if instance.exists:
+                logger.info('Terminating existing MySQL instance')
+                instance.terminate()
 
-        # only launch the instance if it does not exist
-        if not instance.exists:
             logger.info('Launching new MySQL instance')
             instance.launch(
                 EC2Config(
@@ -557,13 +553,11 @@ def main():
         logger = logging.getLogger('@web-app')
         instance = EC2Instance('web-app', ssh_config, logger)
 
-        # terminate existing instance if required
-        if args.override and instance.exists:
-            logger.info('Terminating existing WebApp instance')
-            instance.terminate()
+        if args.override or not instance.exists:
+            if instance.exists:
+                logger.info('Terminating existing WebApp instance')
+                instance.terminate()
 
-        # only launch the instance if it does not exist
-        if not instance.exists:
             logger.info('Launching new WebApp instance')
             instance.launch(
                 EC2Config(
