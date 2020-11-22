@@ -27,7 +27,7 @@ function Book(props) {
             </Card>
           </Col>
           <Col xs={8} sm={8} md={8} lg={8}>
-            <RecommendationCard title="People also viewed" url={`/api/books/${asin}/recommentations`} />
+            <RecommendationCard title="People also viewed" url={`/api/books/${asin}`} />
           </Col>
         </Row>
       </Content>

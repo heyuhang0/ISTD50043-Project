@@ -8,9 +8,8 @@ class Search extends React.Component {
     const params = queryString.parse(this.props.location.search);
     return (
       <div>
-        <h1>Search result for {params.q} </h1>
         {/* <BooksCard title="Search results" url={`/api/search?q=${params.q}`} /> */}
-        <BooksCard title="Search results" url={`/api/books/search?q=${params.q}`} />
+        <BooksCard title={`Search results for: ${params.q}`} url={`/api/books/search?q=${params.q}`} />
       </div>
     );
   }

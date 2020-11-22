@@ -8,11 +8,7 @@ const book_controller = require('../controllers/bookController');
 let wrapper = fn => (...args) => fn(...args).catch(args[2]);
 
 // search book
-<<<<<<< HEAD
 router.get('/search', book_controller.book_search_get);
-=======
-router.get('/', wrapper(book_controller.book_search_get));
->>>>>>> f606b22046ddc81c753c8cafc9227a8100e20930
 
 // create book
 router.post('/', wrapper(book_controller.book_create_post));

@@ -12,7 +12,7 @@ const NewBookForm = ({ visible, onCreate, onCancel }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get('/api/categories/tree').then((res) => {
+    axios.get('/api/categories/').then((res) => {
       setCategories(res.data.category_list.filter(e => e));
       setLoading(false);
     });

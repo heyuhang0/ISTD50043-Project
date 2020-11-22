@@ -47,10 +47,8 @@ class BooksCard extends React.Component {
                 offset: 0
             }
         }).then((res) => {
-            console.log("search get")
-            console.log(this.props.url)
             this.setState({
-                books: res.data,
+                books: res.data.books,
                 loading: false
             });
         });
