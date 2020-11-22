@@ -128,6 +128,7 @@ exports.book_trending_get = async function (req, res) {
         "title": { "$nin": [""] },
         "author": { "$nin": [""] },
         "category": { "$nin": [""] },
+        "description": { "$nin": [""] },
         "rating_average": { "$nin": [0] },
         "imUrl": { "$nin": [""] }
     })
@@ -154,6 +155,7 @@ exports.book_hot_get = async function (req, res) {
         "title": { "$nin": [""] },
         "author": { "$nin": [""] },
         "category": { "$nin": [""] },
+        "description": { "$nin": [""] },
         "rating_average": { "$nin": [0] },
         "imUrl": { "$nin": [""] },
         "rank": { "$ne": -1 }
