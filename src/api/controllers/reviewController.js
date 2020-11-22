@@ -84,17 +84,19 @@ exports.review_for_a_book_get = async function (req, res) {
             return;
         }
         // find user's review
-        user_review = await Review.findOne({
-            where: {
-                reviewerId: userId,
-                asin: bookASIN
-            },
-            include: [{
-                model: User,
-                attributes: ['name', 'email'],
-                required: true
-            }]
-        });
+        if (userId) {
+            user_review = await Review.findOne({
+                where: {
+                    reviewerId: userId,
+                    asin: bookASIN
+                },
+                include: [{
+                    model: User,
+                    attributes: ['name', 'email'],
+                    required: true
+                }]
+            });
+        };
     };
 
 
