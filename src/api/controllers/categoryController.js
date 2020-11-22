@@ -16,7 +16,7 @@ exports.all_categories_get = async function (req, res) {
 }
 
 /**
- * Get suggested categoreis
+ * Get suggested categoreis by book number
  * @param {*} req 
  * @param {*} res suggested category list
  */

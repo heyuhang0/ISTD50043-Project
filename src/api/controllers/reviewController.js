@@ -171,8 +171,8 @@ exports.review_create_post = async function (req, res) {
         return;
     }
 
-    let book_to_be_review = await Book.findOne({ asin: bookASIN });
     // check valid asin and asin exists in db
+    let book_to_be_review = await Book.findOne({ asin: bookASIN });
     if (!asin_regex.test(bookASIN) || !book_to_be_review) {
         res.status(400).send(review_errors.BOOK_ASIN_NOT_EXIST_OR_INVALID);
         return;
@@ -203,6 +203,8 @@ exports.review_create_post = async function (req, res) {
                 required: true
             }]
         });
+
+    // update rating information in book table
     let new_average_rating = (book_to_be_review.rating_total + rating) / (book_to_be_review.review_number + 1);
     let updated_book = await Book.findOneAndUpdate(
         {
@@ -270,6 +272,7 @@ exports.review_update_post = async function (req, res) {
         return;
     };
 
+    // check user is logged in
     token = token.substring(7, token.length);
     try {
         this_user = jwt.verify(token, authentication_secret);
@@ -281,13 +284,14 @@ exports.review_update_post = async function (req, res) {
         return;
     };
 
-    let book_to_be_review = await Book.findOne({ asin: bookASIN });
     // check valid asin and asin exists in db
+    let book_to_be_review = await Book.findOne({ asin: bookASIN });
     if (!asin_regex.test(bookASIN) || !book_to_be_review) {
         res.status(400).send(review_errors.BOOK_ASIN_NOT_EXIST_OR_INVALID);
         return;
     };
 
+    // check review is is correct
     let old_review = await Review.findOne({
         where: { reviewId: reviewId },
         include: [{
@@ -351,11 +355,13 @@ exports.review_upvote_post = async function (req, res) {
     let reviewId = req.params.reviewid;
     console.log('Upvoting review with reviewId=' + reviewId);
 
+    // check review id is correct
     let review = await Review.findOne({ where: { reviewId: reviewId } });
     if (!review) {
         res.status(400).send(review_errors.REVIEWID_NOT_EXIST);
     };
 
+    // update review
     let review_update_query = {
         helpful: db.Sequelize.literal('helpful + 1')
     };

@@ -53,14 +53,14 @@ exports.book_search_get = async function (req, res) {
         return;
     };
 
+    // not keyword
     if (!keyword) {
         res.status(400).send(book_errors.EMPTY_SEARCH_KEYWORDS);
         console.log("Empty keyword!");
         return;
     }
 
-    // 1. match asin; 2. title/author
-    // check if asin and get with asin
+    // 1. check if asin format and match;
     if (asin_regex.test(keyword)) {
         ASINJson = await Book.findOne({ "asin": keyword });
         console.log("finding book by asin " + keyword);
@@ -81,6 +81,7 @@ exports.book_search_get = async function (req, res) {
         }
     };
 
+    // sort statement
     let sort_key = Object.keys(book_sort_keyword).find(key => book_sort_keyword[key] === req.query.sort);
     if(sort_key){
         sort_statement = book_sort_statement[sort_key];
@@ -88,6 +89,7 @@ exports.book_search_get = async function (req, res) {
         sort_statement = book_sort_statement.REVIEW_NUM_DESC;
     };
 
+    // find records by each keyword
     let list_of_keyword = keyword.split(" ");
     let keywords_for_find = new Array();
     list_of_keyword.forEach(function (value, index, array) {
@@ -195,7 +197,7 @@ exports.book_details_get = async function (req, res) {
         "asin": { "$in": related_asin }
     });
 
-    // related book number < 10
+    // related book number < 10, get same categories book for recommendation
     if (related_book_details.length < 10) {
         console.log("related books number less than 10, is " + related_book_details.length)
         let categoryed_books = await Book.find({
@@ -239,6 +241,7 @@ exports.book_create_post = async function (req, res) {
         return;
     }
 
+    // not desired type
     if (typeof req.body.price !== "number"){
         res.status.send(common_errors.BODY_PARAMS_WRONG_TYPE);
     }
@@ -305,12 +308,14 @@ exports.book_category_get = async function (req, res) {
         return;
     };
 
+    // check the category exists
     let desired_category = await Category.findOne({ category: category });
     if (!desired_category) {
         res.status(400).send(book_errors.BOOK_CATEGORY_NOT_EXIST);
         return;
     }
 
+    // sort statement
     let sort_key = Object.keys(book_sort_keyword).find(key => book_sort_keyword[key] === req.query.sort);
     if(sort_key){
         sort_statement = book_sort_statement[sort_key];

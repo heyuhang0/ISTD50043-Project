@@ -180,12 +180,16 @@ exports.register_post = async function (req, res) {
  */
 exports.current_user_get = async function (req, res) {
     console.log("Getting current user's information");
+
+    // check token
     let token = req.headers.authorization;
     if (!token || !token.startsWith("Bearer ")) {
         res.status(401).send(common_error.AUTHENTICATION_ERROR);
         return;
     };
     token = token.substring(7, token.length);
+    
+    // get user info from token
     try {
         user_object = jwt.verify(token, authentication_secret);
         userId = user_object.user;
