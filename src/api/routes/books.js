@@ -10,7 +10,7 @@ var book_controller = require('../controllers/bookController');
 router.get('/testing', book_controller.book_find_by_price);
 
 // search book
-router.get('/', book_controller.book_search_get);
+router.get('/search', book_controller.book_search_get);
 
 // create book
 router.post('/', book_controller.book_create_post);

@@ -13,7 +13,7 @@ function ReviewItem(props) {
 
     const like = () => {
         console.log(action);
-        if (action != 'liked') {
+        if (action !== 'liked') {
             axios
                 .post(`/api/books/${props.review.asin}/reviews/${props.review.reviewId}/upvote`,
                     {

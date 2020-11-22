@@ -15,7 +15,7 @@ class Home extends React.Component {
     return (
       <Layout className="home">
         <Header className="home-header">
-          <SearchBox history={this.props.history}/>
+          <SearchBox history={this.props.history} />
         </Header>
         <Content className="home-content">
           <Row className="cards-row">
