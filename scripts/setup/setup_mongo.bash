@@ -44,7 +44,7 @@ RUNMONGO "
 MONGO_DB="DBProject"
 MONGO_USR="$(echo $MONGO_DB)User"
 MONGO_PWD=$(< /dev/urandom tr -dc A-Za-z0-9 | head -c${1:-16}; echo;)
-MONGO_LOCAL_URL="mongodb://$MONGO_USR:$MONGO_PWD@$localhost:27017/$MONGO_DB?authSource=$MONGO_DB"
+MONGO_LOCAL_URL="mongodb://$MONGO_USR:$MONGO_PWD@localhost:27017/$MONGO_DB?authSource=$MONGO_DB"
 
 RUNMONGO "
   use $MONGO_DB
@@ -80,6 +80,20 @@ rm -rf combined_output
 wget -q -c https://istd50043-assets.s3-ap-southeast-1.amazonaws.com/kindle_categories.json
 mongoimport --quiet --collection categories $MONGO_LOCAL_URL kindle_categories.json
 rm -rf kindle_categories.json
+
+# Create index
+echo "Craeting index..."
+RUNMONGO () {
+  echo "$*" | mongo --quiet $MONGO_LOCAL_URL
+}
+RUNMONGO 'db.books.createIndex({"asin": 1})'
+RUNMONGO 'db.books.createIndex({"title": 1})'
+RUNMONGO 'db.books.createIndex({"author": 1})'
+RUNMONGO 'db.books.createIndex({"category": 1})'
+RUNMONGO 'db.books.createIndex({"rank": 1})'
+RUNMONGO 'db.books.createIndex({"rating_average": -1})'
+RUNMONGO 'db.books.createIndex({"review_number": -1})'
+RUNMONGO 'db.books.createIndex({"review_number": -1, "rating_average": -1})'
 
 # Finsih setup
 echo "Finished setting up MongoDB."
