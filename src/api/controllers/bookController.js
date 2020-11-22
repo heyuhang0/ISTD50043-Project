@@ -1,72 +1,97 @@
 
-mockdata = require('../helpers/mockdata');
 const Book = require('../models/book');
-var Category = require('../models/category');
-var async = require('async')
+const Category = require('../models/category');
+const RandExp = require('randexp');
 
-var mockBooks = mockdata.mockBooks
-const asin_regex = /(B0|BT)([0-9A-Z]{8})$/;
-// Search books
-exports.book_search_get = function (req, res) {
+const book_errors = require('../helpers/Enums/book_error').book_error;
+const common_errors = require('../helpers/Enums/common_errors').common_error;
+const book_sort_keyword = require('../helpers/Enums/book_sort').book_sort_keyword;
+const book_sort_statement = require('../helpers/Enums/book_sort').book_sort_statement;
+const asin_regex = require('../helpers/Constants/app_constant').app_constant.ASIN_REGEX;
+
+/**
+ * Search books given keywords
+ * @param {*} req 
+ * query: keyword(string, required, not empty), 
+ *        limit(number, optional, default 20), 
+ *        offset(number, optional, default 0), 
+ *        sort(string, optional, enum in book_sort_keyword, optianl)
+ * @param {*} res 
+ * {
+ *      success: 1,
+ *      books: array of objects(book list, can be empty)
+ * }
+ * OR 
+ * {success: 0, err_type: Number, err_msg: String} (Enum in common_error or book_error)
+ */
+exports.book_search_get = async function (req, res) {
     let keyword = req.query.keyword;
     let limit = Number(req.query.limit) || 20;
     let offset = Number(req.query.offset) || 0;
-    var ASINJson;
+    let ASINJson;
+    let sort_statement;
     console.log(
         'Searching for books with',
         'keyword=' + keyword,
         'limit=' + limit,
-        'offset=' + offset);
+        'offset=' + offset
+    );
 
     // > 100 per page
     if (limit > 100) {
         res.status(400)
-            .send({
-                success: 0,
-                error_type: 1,
-                error_msg: "limit must less than 100"
-            });
+            .send(common_errors.EXCEED_LIMIT);
         return;
     };
 
     // > 1000 records
     if (offset + limit > 1000) {
-        console.log((offset + 1) * limit);
-        console.log(offset, limit)
-        res.status(400)
-            .send({
-                success: 0,
-                error_type: 2,
-                error_msg: "exceeding max search limit",
-            });
+        res.json({
+            success: 1,
+            books: []
+        });
         return;
     };
 
+    // not keyword
     if (!keyword) {
-        res.json({ message: "Please enter your keywords!" });
+        res.status(400).send(book_errors.EMPTY_SEARCH_KEYWORDS);
         console.log("Empty keyword!");
         return;
     }
-    // 1. match asin; 2. title/author
-    // check if asin and get with asin
+
+    // 1. check if asin format and match;
     if (asin_regex.test(keyword)) {
-        Book.findOne({ "asin": keyword }, function (err, book) {
-            if (err) {
-                res.status(400).send({
-                    success: 0,
-                    error_type: 3,
-                    error_msg: "Error during finding book with ASIN"
-                });
-                return;
-            }
-            if (book) {
-                console.log("1 result found with ASIN!");
-            }
-            ASINJson = book;
-        });
-    }
-    var list_of_keyword = keyword.split(" ");
-    var keywords_for_find = new Array();
+        ASINJson = await Book.findOne({ "asin": keyword });
+        console.log("finding book by asin " + keyword);
+        if (ASINJson) {
+            res.json({
+                success: 1,
+                books: [ASINJson]
+            });
+            console.log("found book with asin " + keyword);
+            return;
+        } else {
+            res.json({
+                success: 1,
+                books: []
+            });
+            console.log("Cannot find book with asin " + keyword);
+            return;
+        }
+    };
+
+    // sort statement
+    let sort_key = Object.keys(book_sort_keyword).find(key => book_sort_keyword[key] === req.query.sort);
+    if(sort_key){
+        sort_statement = book_sort_statement[sort_key];
+    }else{
+        sort_statement = book_sort_statement.REVIEW_NUM_DESC;
+    };
+
+    // find records by each keyword
+    let list_of_keyword = keyword.split(" ");
+    let keywords_for_find = new Array();
     list_of_keyword.forEach(function (value, index, array) {
         if (value !== "") {
             keywords_for_find.push({
@@ -76,151 +101,198 @@ exports.book_search_get = function (req, res) {
         }
     });
     // get with title/author
-    Book.find({ "$and": keywords_for_find }).limit(limit).skip(limit * offset).exec(function (err, books) {
-        if (err) {
-            res.status(400).send({
-                success: 0,
-                error_type: 3,
-                error_msg: "Error during finding book with title/author"
-            });
-            return;
-        }
-        console.log(books.length + " result(s) found apart from ASIN!");
-        if (ASINJson) {
-            books.push(ASINJson);
-        }
-        if (books.length > 0) {
-            res.json(books);
-        } else {
-            res.json({ message: "No result found!" });
-        }
+    let books = await Book.find({ "$and": keywords_for_find })
+        .sort([sort_statement])
+        .limit(limit)
+        .skip(limit * offset);
 
+    res.json({
+        success: 1,
+        books: books
     });
-    // res.json(mockBooks);
+    console.log(books.length + " result(s) found");
+    return;
 };
 
-// testing for find books
-exports.book_find_by_price = function (req, res) {
-    var price = parseFloat(req.query.price);
-    var q = Book.find({ 'price': price }).limit(5);
-    q.exec(function (err, book) {
-        if (err) {
-            res.status(400).send({
-                success: 0,
-                error_type: 3,
-                error_msg: "Error during finding book by price"
-            });
-            return;
-        }
-        res.json(book);
-        console.log(book.length + " result(s) found!");
-    });
-}
-
-// Trending books
-exports.book_trending_get = function (req, res) {
-    Book.find({
+/**
+ * Trending books by review number and rating
+ * @param {*} req 
+ * @param {*} res 
+ * {
+ *      success: 1
+ *      books: array of objects (book_list, non empty)
+ * }
+ */
+exports.book_trending_get = async function (req, res) {
+    let trending_books = await Book.find({
         "title": { "$nin": [""] },
         "author": { "$nin": [""] },
         "category": { "$nin": [""] },
-        "rating_average": { "$nin": [""] },
+        "rating_average": { "$nin": [0] },
         "imUrl": { "$nin": [""] }
     })
         .sort([["review_number", -1], ["rating_average", -1]])
         .limit(10)
-        .exec(function (err, books) {
-            if (err) {
-                res.status(400).send({
-                    success: 0,
-                    error_type: 2,
-                    error_msg: "Error during finding trending books"
-                });
-                return;
-            }
-            res.json({
-                success: 1,
-                books: books
-            });
-        });
+    res.json({
+        success: 1,
+        books: trending_books
+    });
+    return;
 }
 
-const sqlquery = "SELECT asin FROM reviews \
-    WHERE ";
-
-// Recent books
-exports.book_recent_get = function (req, res) {
-
-    res.json({ success: 1, books: mockBooks.reverse() });
+/**
+ * Hot books by ascending ranks
+ * @param {*} req 
+ * @param {*} res 
+ * {
+ *      success: 1
+ *      books: array of objects (book_list, non empty)
+ * }
+ */
+exports.book_hot_get = async function (req, res) {
+    let hot_books = await Book.find({
+        "title": { "$nin": [""] },
+        "author": { "$nin": [""] },
+        "category": { "$nin": [""] },
+        "rating_average": { "$nin": [0] },
+        "imUrl": { "$nin": [""] },
+        "rank": { "$ne": -1 }
+    })
+        .sort([["rank", 1]])
+        .limit(10);
+    res.json({
+        success: 1,
+        books: hot_books
+    });
+    return;
 }
 
-// Get book on asin
-exports.book_details_get = function (req, res) {
+/**
+ * Get book on asin
+ * @param {*} req params: asin(string, required)
+ * @param {*} res 
+ * {
+ *      success: 1, 
+ *      book: object(non-empty), 
+ *      related: object array(related 10 book list)
+ * }
+ * OR 
+ * {success: 0, err_type: Number, err_msg: String} (Enum in common_error or book_error)
+ */
+exports.book_details_get = async function (req, res) {
     let bookASIN = req.params.asin;
     console.log('Getting book with ASIN=' + bookASIN);
-    Book.findOne({ asin: bookASIN }, function (err, book) {
-        if (err) {
-            console.log(err);
-            res.status(400).send({
-                success: 0,
-                error_type: 2,
-                error_msg: "Error during getting book details"
-            });
-            return;
-        }
-        if (!book) {
-            console.log('No book found!');
-            res.json({ message: 'No book found!' });
-        } else {
-            console.log('Find book with ASIN=' + bookASIN);
-            res.json(book);
-        }
+
+    // asin does not exists
+    let detailed_book = await Book.findOne({ asin: bookASIN });
+    if (!detailed_book) {
+        console.log('No book found!');
+        res.status(400).send(book_errors.BOOK_ASIN_NOT_EXIST);
+        return;
+    }
+    console.log('Found book with ASIN=' + bookASIN);
+
+    let related_asin = detailed_book.related;
+    let book_category = detailed_book.category;
+
+    // find related books details
+    let related_book_details = await Book.find({
+        "asin": { "$in": related_asin }
     });
+
+    // related book number < 10, get same categories book for recommendation
+    if (related_book_details.length < 10) {
+        console.log("related books number less than 10, is " + related_book_details.length)
+        let categoryed_books = await Book.find({
+            "asin": { "$nin": related_asin },
+            "category": book_category,
+            "title": { "$nin": [""] },
+            "author": { "$nin": [""] },
+            "rating_average": { "$nin": [0] },
+            "imUrl": { "$nin": [""] }
+        }).limit(10 - related_book_details.length)
+        related_book_details = related_book_details.concat(categoryed_books);
+    };
+
+    res.json({
+        success: 1,
+        book: detailed_book,
+        related: related_book_details
+    });
+    return;
 }
 
-// Handle book create on POST.
-exports.book_create_post = function (req, res, next) {
-    try {
-        //Check if necessary inputs are received
-        if (!req.query.title || typeof req.body.title !== "string") {
-            throw new Error("POST Request Needs 'title' String Parameter");
-        }
-        if (!req.query.author || typeof req.body.author !== "string") {
-            throw new Error("POST Request Needs 'author' String Parameter");
-        }
-        if (!req.query.price || typeof req.body.price !== "number") {
-            throw new Error("POST Request Needs 'price' Number Parameter");
-        }
-        if (!req.query.categories || typeof req.body.categories !== "string") {
-            throw new Error("POST Request Needs 'categories' String Parameter");
-        }
-        if (!req.query.description || typeof req.body.description !== "string") {
-            throw new Error("POST Request Needs 'description' String Parameter");
-        }
-    } catch (e) {
-        return next(e);
+/**
+ * Create a book
+ * @param {*} req 
+ * body: title(String, required), 
+ *       author(String, required), 
+ *       category(String, required), 
+ *       description(String, required), 
+ *       price(Number, required)
+ * @param {*} res 
+ * {
+ *      success: 1,
+ *      book: object(created book)
+ * }
+ * OR 
+ * {success: 0, err_type: Number, err_msg: String} (Enum in common_error or book_error)
+ */
+exports.book_create_post = async function (req, res) {
+    //Check if necessary inputs are received
+    if (!req.body.title || !req.body.author || !req.body.price || !req.body.category || !req.body.description) {
+        res.status(400).send(common_errors.MISSING_REQUIRED_PARAMS);
+        return;
     }
-    Book.create(req.body, function (err) {
-        if (err) {
-            console.log(err);
-            res.status(400).send({
-                success: 0,
-                error_type: 2,
-                error_msg: "Error during creating a new book"
-            });
-            return;
-        }
-        console.log(req.body);
-        res.json({ message: "Create Success" });
+
+    // not desired type
+    if (typeof req.body.price !== "number"){
+        res.status.send(common_errors.BODY_PARAMS_WRONG_TYPE);
+        return;
+    }
+
+    // Generate asin
+    let ifExists = true;
+    let newASIN = null;
+    while (ifExists) {
+        newASIN = new RandExp(asin_regex).gen();
+        ifExists = await Book.exists({ asin: newASIN });
+    }
+    if (!newASIN) {
+        let e = new Error('error when generating ASIN')
+        e.status = 500;
+        throw e;
+    }
+
+    // create book in db
+    req.body.asin = newASIN;
+    let newBook = await Book.create(req.body);
+    res.json({
+        success: 1,
+        book: newBook
     });
-    // res.send('NOT IMPLEMENTED: Book create POST');
+    return;
 };
 
-
-// Get books in a category
-exports.book_category_get = function (req, res) {
+/**
+ * Get book in a category
+ * @param {*} req params: category(string, required); 
+ * query: limit(number, optional, default 20), 
+ *        offset(number, optional, default 0), 
+ *        sort(string, optional, enum in book_sort_keyword, optianl)
+ * @param {*} res 
+ * {
+ *      success: 1
+ *      books: object array
+ * }
+ * OR
+ * {success: 0, err_type: Number, err_msg: String} (Enum in common_error or book_error)
+ */
+exports.book_category_get = async function (req, res) {
     let category = req.params.category;
     let limit = Number(req.query.limit) || 20;
     let offset = Number(req.query.offset) || 0;
+    let sort_statement;
     console.log(
         'Searching for category with',
         'keyword=' + category,
@@ -230,75 +302,42 @@ exports.book_category_get = function (req, res) {
 
     // each page > 100 records
     if (limit > 100) {
-        res.status(400)
-            .send({
-                success: 0,
-                error_type: 1,
-                error_msg: "limit must less than 100"
-            });
+        res.status(400).send(common_errors.EXCEED_LIMIT);
         return;
     };
 
     // > 1000 records
     if (offset + limit > 1000) {
-        console.log((offset + 1) * limit);
-        console.log(offset, limit)
-        res.status(400)
-            .send({
-                success: 0,
-                error_type: 2,
-                error_msg: "exceeding max search limit",
-            });
+        res.json({
+            success: 1,
+            books: []
+        });
         return;
     };
 
-    async.waterfall([
-        function (callback) {
-            Category.findOne({ category: category })
-                .exec(function (err, category_found) {
-                    callback(err, category_found)
-                });
-        },
-        function (category_found, callback) {
-            console.log(category_found)
-            if (!category_found) {
-                console.log("no such category")
-                callback(null, null)
-            } else {
-                console.log(category_found.category);
-                Book.find({ category: category_found.category })
-                    .skip(offset)
-                    .sort({ rating_total: -1 })
-                    .limit(limit)
-                    .exec(function (err, list_books) {
-                        callback(err, list_books)
-                    });
-            }
-        }
-    ], function (err, list_books) {
-        if (err) {
-            console.log(err);
-            res.status(500)
-                .send({
-                    success: 0,
-                    error_type: 3,
-                    error_msg: "Internal Error"
-                });
-            return;
-        }
-        if (!list_books) {
-            res.status(400)
-                .send({
-                    success: 0,
-                    error_type: 4,
-                    error_msg: "no such category"
-                });
-            return;
-        }
-        console.log(list_books.length)
-        res.json({
-            success: 1,
-            books: list_books,
-        });
+    // check the category exists
+    let desired_category = await Category.findOne({ category: category });
+    if (!desired_category) {
+        res.status(400).send(book_errors.BOOK_CATEGORY_NOT_EXIST);
+        return;
+    }
+
+    // sort statement
+    let sort_key = Object.keys(book_sort_keyword).find(key => book_sort_keyword[key] === req.query.sort);
+    if(sort_key){
+        sort_statement = book_sort_statement[sort_key];
+    }else{
+        sort_statement = book_sort_statement.REVIEW_NUM_DESC;
+    };
+
+    // get books
+    let list_books = await Book.find({ category: desired_category.category })
+        .skip(offset)
+        .sort([sort_statement])
+        .limit(limit)
+    res.json({
+        success: 1,
+        books: list_books,
     });
+    return;
 };

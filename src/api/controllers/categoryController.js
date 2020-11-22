@@ -1,27 +1,34 @@
 
-var Category = require('../models/category');
-mockdata = require('../helpers/mockdata');
+const Category = require('../models/category');
 
-exports.all_categories_get = function (req, res) {
+/**
+ * Get all categories
+ * @param {*} req 
+ * @param {*} res category list
+ */
+exports.all_categories_get = async function (req, res) {
   console.log("getting all categories");
-  Category.find()
-    .populate('categories')
-    .exec(function (err, list_genres) {
-      if (err) { return next(err); }
-      //Successful, so render
-      res.json({ category_list: list_genres });
-    });
+  let categories = await Category.find();
+  res.json({
+    success: 1,
+    category_list: categories
+  });
+  return;
 }
 
-exports.suggested_categories_get = function (req, res) {
+/**
+ * Get suggested categoreis by book number
+ * @param {*} req 
+ * @param {*} res suggested category list
+ */
+exports.suggested_categories_get = async function (req, res) {
   console.log("getting suggested categories");
-  Category.find()
-    .populate('categories')
+  let suggested_categories = await Category.find()
     .sort({ book_count: -1 })
-    .limit(10)
-    .exec(function (err, list_genres) {
-      if (err) { return next(err); }
-      //Successful, so render
-      res.json({ category_list: list_genres });
-    });
+    .limit(10);
+  res.json({
+    success: 1,
+    category_list: suggested_categories
+  });
+  return;
 }

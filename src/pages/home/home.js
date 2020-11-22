@@ -23,7 +23,7 @@ class Home extends React.Component {
               <BooksCard title="Trending Books" url="/api/books/trending" />
             </Col>
             <Col xs={24} sm={24} md={12} lg={8}>
-              <BooksCard title="Recently Reviewed" url="/api/books/recent" />
+              <BooksCard title="Hot Books" url="/api/books/hot" />
             </Col>
             <Col xs={24} sm={24} md={12} lg={8}>
               <UserCard />

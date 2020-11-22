@@ -9,19 +9,12 @@ fi
 set -e
 
 # Config Root Password
-export MYSQL_PWD="this_is_the_test_mysql_password"  # TODO read password from parameters
-echo "mysql-server mysql-server/root_password password $MYSQL_PWD" | debconf-set-selections
-echo "mysql-server mysql-server/root_password_again password $MYSQL_PWD" | debconf-set-selections
-
-echo "phpmyadmin phpmyadmin/dbconfig-install boolean true" | debconf-set-selections
-echo "phpmyadmin phpmyadmin/app-password-confirm password $MYSQL_PWD" | debconf-set-selections
-echo "phpmyadmin phpmyadmin/mysql/admin-pass password $MYSQL_PWD" | debconf-set-selections
-echo "phpmyadmin phpmyadmin/mysql/app-pass password $MYSQL_PWD" | debconf-set-selections
-echo "phpmyadmin phpmyadmin/reconfigure-webserver multiselect apache2" | debconf-set-selections
-
+export MYSQL_PWD=$(< /dev/urandom tr -dc A-Za-z0-9 | head -c${1:-16}; echo;)
 
 # Install MySQL
-apt update && apt install -y mysql-server-8.0 mysql-client-8.0 phpmyadmin unzip
+echo "mysql-server mysql-server/root_password password $MYSQL_PWD" | debconf-set-selections
+echo "mysql-server mysql-server/root_password_again password $MYSQL_PWD" | debconf-set-selections
+apt update -qq && apt install -qq -y mysql-server-8.0 mysql-client-8.0 unzip
 
 # Config UTF-8, bind-address and allow remote access
 sed -i -e "$ a [client]\n\n[mysql]\n\n[mysqld]"  /etc/mysql/my.cnf && \
@@ -30,6 +23,14 @@ sed -i -e "s/\(\[mysql\]\)/\1\ndefault-character-set = utf8mb4/g" /etc/mysql/my.
 sed -i -e "s/\(\[mysqld\]\)/\1\ninit_connect='SET NAMES utf8mb4'\ncharacter-set-server = utf8mb4\ncollation-server=utf8mb4_unicode_ci\nbind-address = 0.0.0.0/g" /etc/mysql/my.cnf
 service mysql restart
 mysql -uroot --database="mysql" --execute="UPDATE user SET host='%' WHERE user='root';flush privileges;"
+
+# Install phpMyAdmin (in background)
+echo "phpmyadmin phpmyadmin/dbconfig-install boolean true" | debconf-set-selections
+echo "phpmyadmin phpmyadmin/app-password-confirm password $MYSQL_PWD" | debconf-set-selections
+echo "phpmyadmin phpmyadmin/mysql/admin-pass password $MYSQL_PWD" | debconf-set-selections
+echo "phpmyadmin phpmyadmin/mysql/app-pass password $MYSQL_PWD" | debconf-set-selections
+echo "phpmyadmin phpmyadmin/reconfigure-webserver multiselect apache2" | debconf-set-selections
+apt install -qq -y phpmyadmin &
 
 # Create database
 export MYSQL_DATABASE="DBProject"
@@ -116,3 +117,14 @@ RUNSQL "UPDATE user SET email=null;"
 
 echo "Delete temporary table"
 RUNSQL "DROP TABLE kindle_review_imported"
+
+# Finsih setup
+wait
+echo "Finished setting up MySQL server."
+echo "\
+export MYSQL_DB=$MYSQL_DATABASE
+export MYSQL_USR=root
+export MYSQL_PWD=$MYSQL_PWD
+export AUTH_SECRET=$(< /dev/urandom tr -dc A-Za-z0-9 | head -c${1:-32}; echo;)
+" > ~/.credentials
+echo "Credentials have been saved to ~/.credentials"

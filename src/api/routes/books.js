@@ -1,28 +1,30 @@
-var express = require('express');
-var reviewsRouter = require('./reviews');
+const express = require('express');
+const reviewsRouter = require('./reviews');
 
-var router = express.Router();
+const router = express.Router();
 
 // Require controller modules.
-var book_controller = require('../controllers/bookController');
-
-//TODO: to delete test function
-router.get('/testing', book_controller.book_find_by_price);
+const book_controller = require('../controllers/bookController');
+let wrapper = fn => (...args) => fn(...args).catch(args[2]);
 
 // search book
+<<<<<<< HEAD
 router.get('/search', book_controller.book_search_get);
+=======
+router.get('/', wrapper(book_controller.book_search_get));
+>>>>>>> f606b22046ddc81c753c8cafc9227a8100e20930
 
 // create book
-router.post('/', book_controller.book_create_post);
+router.post('/', wrapper(book_controller.book_create_post));
 
 // trending books
-router.get('/trending', book_controller.book_trending_get);
+router.get('/trending', wrapper(book_controller.book_trending_get));
 
-// recent books
-router.get('/recent', book_controller.book_recent_get);
+// hot books
+router.get('/hot', wrapper(book_controller.book_hot_get));
 
 // book details
-router.get('/:asin', book_controller.book_details_get);
+router.get('/:asin', wrapper(book_controller.book_details_get));
 
 // book reviews
 router.use('/:asin/reviews', reviewsRouter);

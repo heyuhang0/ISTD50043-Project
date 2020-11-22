@@ -1,14 +1,15 @@
-var express = require('express');
-var router = express.Router();
+const express = require('express');
+const router = express.Router();
 
-var categoryController = require('../controllers/categoryController');
-var bookCantroller = require('../controllers/bookController');
+const categoryController = require('../controllers/categoryController');
+const bookCantroller = require('../controllers/bookController');
+let wrapper = fn => (...args) => fn(...args).catch(args[2]);
 
 // get all categories
-router.get('/', categoryController.all_categories_get);
+router.get('/', wrapper(categoryController.all_categories_get));
 
 // get suggested categories
-router.get('/suggested', categoryController.suggested_categories_get);
+router.get('/suggested', wrapper(categoryController.suggested_categories_get));
 
 // get suggested categories
 router.get('/:category', bookCantroller.book_category_get);
