@@ -137,7 +137,7 @@ exports.book_hot_get = async function (req, res) {
         "imUrl": {"$nin": [""]}, 
         "rank": {"$ne":-1}
     })
-        .sort([["rank", -1]])
+        .sort([["rank", 1]])
         .limit(10);
     if(hot_books.length>0){
         res.json({
