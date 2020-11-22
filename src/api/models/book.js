@@ -14,7 +14,7 @@ const BookSchema = new Schema({
         type: Number,
         required: [true, "'price' field required"]
     },
-    categories: {
+    category: {
         type: String, 
         required: [true, "'categories' field required"]
     },
