@@ -2,6 +2,8 @@
 const jwt = require('jsonwebtoken');
 const Book = require('../models/book');
 const db = require("../models/sequelizeIndex");
+const review_errors = require('../helpers/Enums/review_error').review_error;
+const common_errors = require('../helpers/Enums/common_errors').common_error;
 
 const Review = db.review;
 const User = db.user;
@@ -56,33 +58,19 @@ exports.review_for_a_book_get = async function (req, res) {
 
     // check valid asin and asin exists in db
     if (!asin_regex.test(bookASIN) || !await Book.findOne({ asin: bookASIN })) {
-        res.status(400)
-            .send({
-                success: 0,
-                error_type: 0,
-                error_msg: "Invalid asin or asin does not exist"
-            });
+        res.status(400).send(common_errors.EXCEED_LIMIT);
         return;
     }
 
     // each page > 100 records, or total > 1000 record
     if (limit > 100 || offset + limit > 1000) {
-        res.status(400)
-            .send({
-                success: 0,
-                error_type: 1,
-                error_msg: "limit must less than 100, offset + limit must <= 1000"
-            });
+        res.status(400).send(common_errors.EXCEED_MAX_SEARCH);
         return;
     };
 
     // invalid token
     if (token && !token.startsWith("Bearer ")) {
-        res.status(401).send({
-            success: 0,
-            error_type: 2,
-            error_message: "failed to authenticate user."
-        });
+        res.status(401).send(common_errors.AUTHENTICATION_ERROR);
         return;
     }
 
@@ -95,11 +83,7 @@ exports.review_for_a_book_get = async function (req, res) {
             email = this_user.email;
             name = this_user.name
         } catch (err) {
-            res.status(401).send({
-                success: 0,
-                error_type: 2,
-                error_message: "failed to authenticate user."
-            });
+            res.status(401).send(common_errors.AUTHENTICATION_ERROR);
             return;
         }
         // find user's review
@@ -151,21 +135,13 @@ exports.review_create_post = async function (req, res) {
     let userId;
 
     if (!bookASIN || !rating || !summary || !review_text) {
-        res.status(400).send({
-            success: 0,
-            error_type: 0,
-            error_message: "Missing required fields."
-        });
+        res.status(400).send(common_errors.MISSING_REQUIRED_PARAMS);
         return;
     }
 
     // invalid token
     if (!token || !token.startsWith("Bearer ")) {
-        res.status(401).send({
-            success: 0,
-            error_type: 1,
-            error_message: "failed to authenticate user."
-        });
+        res.status(401).send(common_errors.AUTHENTICATION_ERROR);
         return;
     }
 
@@ -177,23 +153,14 @@ exports.review_create_post = async function (req, res) {
         email = this_user.email;
         name = this_user.name
     } catch (err) {
-        res.status(401).send({
-            success: 0,
-            error_type: 1,
-            error_message: "failed to authenticate user."
-        });
+        res.status(401).send(common_errors.AUTHENTICATION_ERROR);
         return;
     }
 
     let book_to_be_review = await Book.findOne({ asin: bookASIN });
     // check valid asin and asin exists in db
     if (!asin_regex.test(bookASIN) || !book_to_be_review) {
-        res.status(400)
-            .send({
-                success: 0,
-                error_type: 2,
-                error_msg: "Invalid asin or asin does not exist"
-            });
+        res.status(400).send(review_errors.BOOK_ASIN_NOT_EXIST_OR_INVALID);
         return;
     }
 
@@ -266,22 +233,14 @@ exports.review_update_post = async function (req, res) {
     let review_text = req.body.reviewText;
 
     if (!bookASIN || !reviewId || !rating || !summary || !review_text) {
-        res.status(400).send({
-            success: 0,
-            error_type: 0,
-            error_message: "Missing required fields."
-        });
+        res.status(400).send(common_errors.MISSING_REQUIRED_PARAMS);
         return;
     };
 
     // TODO: delete comment after frontend is ready
     // *** COMMENT OUT THIS PART FOR EASIER DEVELEPMENT ***
     if (!token || !token.startsWith("Bearer ")) {
-        res.status(401).send({
-            success: 0,
-            error_type: 1,
-            error_message: "failed to authenticate user."
-        });
+        res.status(401).send(common_errors.AUTHENTICATION_ERROR);
         return;
     };
 
@@ -292,11 +251,7 @@ exports.review_update_post = async function (req, res) {
         email = this_user.email;
         name = this_user.name
     } catch (err) {
-        res.status(401).send({
-            success: 0,
-            error_type: 1,
-            error_message: "failed to authenticate user."
-        });
+        res.status(401).send(common_errors.AUTHENTICATION_ERROR);
         return;
     };
 
@@ -305,12 +260,7 @@ exports.review_update_post = async function (req, res) {
     let book_to_be_review = await Book.findOne({ asin: bookASIN });
     // check valid asin and asin exists in db
     if (!asin_regex.test(bookASIN) || !book_to_be_review) {
-        res.status(400)
-            .send({
-                success: 0,
-                error_type: 2,
-                error_msg: "Invalid asin or asin does not exist"
-            });
+        res.status(400).send(review_errors.BOOK_ASIN_NOT_EXIST_OR_INVALID);
         return;
     };
 
@@ -323,11 +273,7 @@ exports.review_update_post = async function (req, res) {
         }]
     });
     if (!old_review) {
-        res.status(400).send({
-            success: 0,
-            error_type: 3,
-            error_msg: "review id does not exist"
-        });
+        res.status(400).send(review_errors.REVIEWID_NOT_EXIST);
     };
 
     // update book review info
@@ -378,11 +324,7 @@ exports.review_upvote_post = async function (req, res) {
 
     let review = await Review.findOne({ where: { reviewId: reviewId } });
     if (!review) {
-        res.status(400).send({
-            success: 0,
-            error_type: 0,
-            error_msg: "review id does not exist"
-        });
+        res.status(400).send(review_errors.REVIEWID_NOT_EXIST);
     };
 
     let review_update_query = {

@@ -5,7 +5,8 @@ const User = db.user;
 const authentication_secret = process.env.AUTHENTICATION_SECRET;
 const email_regex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 const password_regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
-
+const user_error = require('../helpers/Enums/user_error').user_error;
+const common_error = require('../helpers/Enums/common_errors').common_error;
 /**
  * Login user.
  * @param {*} req body: email, password
@@ -16,15 +17,20 @@ exports.login_post = async function (req, res) {
     let password = req.body.password;
     console.log("Logging in user with email=" + email);
     // Incorrect format
-    if (!email || !password || !email_regex.test(email) || !password_regex.test(password)) {
-        res.status(400)
-            .send({
-                success: 0,
-                error_type: 1,
-                error_msg: "Please enter valid email and password"
-            });
+    if (!email || !password ) {
+        res.status(400).send(common_error.MISSING_REQUIRED_PARAMS);
         return;
     };
+
+    if (!email_regex.test(email)){
+        res.status(400).send(user_error.INVALID_EMAIL);
+        return;
+    };
+
+    if(!password_regex.test(password)){
+        res.status(400).send(user_error.INVALID_PASSWORD);
+        return;
+    }
 
     //find user in db
     let user;
@@ -35,23 +41,13 @@ exports.login_post = async function (req, res) {
 
     // user not found in db
     if (!user) {
-        res.status(400)
-            .send({
-                success: 0,
-                error_type: 2,
-                error_msg: "User not registed"
-            });
+        res.status(400).send(user_error.EMAIL_NOT_REGISTED);
         return;
     };
 
     // password incorrect
     if (bcrypt.hashSync(password, bcrypt.getSalt(user.password)) != user.password) {
-        res.status(400)
-            .send({
-                success: 0,
-                error_type: 3,
-                error_msg: "Incorrect password"
-            });
+        res.status(400).send(user_error.WRONG_PASSWORD);
         return;
     }
     const token = jwt.sign(
@@ -87,45 +83,25 @@ exports.register_post = async function (req, res) {
     );
     // Incorrect format
     if (!email || !password || !password2 || !name) {
-        res.status(400)
-            .send({
-                success: 0,
-                error_type: 1,
-                error_msg: "Please enter valid email, password and confirmed password"
-            });
+        res.status(400).send(common_error.MISSING_REQUIRED_PARAMS);
         return;
     }
 
     // invalid email
     if (!email_regex.test(email)) {
-        res.status(400)
-            .send({
-                success: 0,
-                error_type: 2,
-                error_msg: "Invalid Email"
-            });
+        res.status(400).send(user_error.INVALID_EMAIL);
         return;
     }
 
     // invalid password
     if (!password_regex.test(password)) {
-        res.status(400)
-            .send({
-                success: 0,
-                error_type: 3,
-                error_msg: "Invalid Password"
-            });
+        res.status(400).send(user_error.INVALID_PASSWORD);
         return;
     }
 
     // password not the same
     if (password != password2) {
-        res.status(400)
-            .send({
-                success: 0,
-                error_type: 4,
-                error_msg: "Confirmed password and password are different"
-            });
+        res.status(400).send(user_error.CONFIRMED_PASSWORD_WRONG);
         return;
     }
 
@@ -137,12 +113,7 @@ exports.register_post = async function (req, res) {
     });
 
     if (user) {
-        res.status(400)
-            .send({
-                success: 0,
-                error_type: 5,
-                error_msg: "User already registered"
-            });
+        res.status(400).send(user_error.EMAIL_ALREADY_REGISTED);
         return;
     }
 
@@ -180,11 +151,7 @@ exports.current_user_get = async function (req, res) {
     console.log("Getting current user's information");
     let token = req.headers.authorization;
     if (!token || !token.startsWith("Bearer ")) {
-        res.status(401).send({
-            success: 0,
-            error_type: 1,
-            error_message: "failed to authenticate user."
-        });
+        res.status(401).send(common_error.AUTHENTICATION_ERROR);
         return;
     };
     token = token.substring(7, token.length);
@@ -194,11 +161,7 @@ exports.current_user_get = async function (req, res) {
         name = user_object.name;
         email = user_object.email;
     } catch (err) {
-        res.status(401).send({
-            success: 0,
-            error_type: 1,
-            error_message: "failed to authenticate user."
-        });
+        res.status(401).send(common_error.AUTHENTICATION_ERROR);
         return;
     };
     res.json({ userId: userId, name: name, email: email });

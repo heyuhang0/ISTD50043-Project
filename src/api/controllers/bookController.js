@@ -3,6 +3,8 @@ const Book = require('../models/book');
 const Category = require('../models/category');
 const RandExp = require('randexp');
 
+const book_errors = require('../helpers/Enums/book_error').book_error;
+const common_errors = require('../helpers/Enums/common_errors').common_error;
 const asin_regex = /(B0|BT)([0-9A-Z]{8})$/;
 
 /**
@@ -26,11 +28,7 @@ exports.book_search_get = async function (req, res) {
     // > 100 per page
     if (limit > 100) {
         res.status(400)
-            .send({
-                success: 0,
-                error_type: 1,
-                error_msg: "limit must less than 100"
-            });
+            .send(common_errors.EXCEED_LIMIT);
         return;
     };
 
@@ -39,20 +37,12 @@ exports.book_search_get = async function (req, res) {
         console.log((offset + 1) * limit);
         console.log(offset, limit)
         res.status(400)
-            .send({
-                success: 0,
-                error_type: 2,
-                error_msg: "exceeding max search limit",
-            });
+            .send(common_errors.EXCEED_MAX_SEARCH);
         return;
     };
 
     if (!keyword) {
-        res.status(400).send({
-            success: 0,
-            error_type: 3,
-            error_msg: "empty keywords"
-        });
+        res.status(400).send(book_errors.EMPTY_SEARCH_KEYWORDS);
         console.log("Empty keyword!");
         return;
     }
@@ -185,20 +175,16 @@ exports.book_hot_get = async function (req, res) {
 exports.book_details_get = async function (req, res) {
     let bookASIN = req.params.asin;
     console.log('Getting book with ASIN=' + bookASIN);
-    
+
     // asin does not exists
     let detailed_book = await Book.findOne({ asin: bookASIN });
     if (!detailed_book) {
         console.log('No book found!');
-        res.status(400).send({
-            success: 0,
-            error_type: 1,
-            error_msg: "ASIN does not exists."
-        });
+        res.status(400).send(book_errors.BOOK_ASIN_NOT_EXIST);
         return;
     }
     console.log('Found book with ASIN=' + bookASIN);
-    
+
     let related_asin = detailed_book.related;
     let book_category = detailed_book.category;
 
@@ -236,45 +222,13 @@ exports.book_details_get = async function (req, res) {
  */
 exports.book_create_post = async function (req, res) {
     //Check if necessary inputs are received
-    if (!req.body.title || typeof req.body.title !== "string") {
-        res.status(400).send({
-            success: 0,
-            error_type: 3,
-            error_msg: "POST Request Needs 'title' String Parameter"
-        });
+    if (!req.body.title || !req.body.author || !req.body.price || !req.body.category || !req.body.description) {
+        res.status(400).send(common_errors.MISSING_REQUIRED_PARAMS);
         return;
     }
-    if (!req.body.author || typeof req.body.author !== "string") {
-        res.status(400).send({
-            success: 0,
-            error_type: 3,
-            error_msg: "POST Request Needs 'author' String Parameter"
-        });
-        return;
-    }
-    if (!req.body.price || typeof req.body.price !== "number") {
-        res.status(400).send({
-            success: 0,
-            error_type: 3,
-            error_msg: "POST Request Needs 'price' Number Parameter"
-        });
-        return;
-    }
-    if (!req.body.category || typeof req.body.category !== "string") {
-        res.status(400).send({
-            success: 0,
-            error_type: 3,
-            error_msg: "POST Request Needs 'categories' String Parameter"
-        });
-        return;
-    }
-    if (!req.body.description || typeof req.body.description !== "string") {
-        res.status(400).send({
-            success: 0,
-            error_type: 3,
-            error_msg: "POST Request Needs 'description' String Parameter"
-        });
-        return;
+
+    if (typeof req.body.price !== "number"){
+        res.status.send(common_errors.BODY_PARAMS_WRONG_TYPE);
     }
 
     // Generate asin
@@ -299,7 +253,6 @@ exports.book_create_post = async function (req, res) {
     });
 };
 
-
 /**
  * Get book in a category
  * @param {*} req req params: category; 
@@ -320,12 +273,7 @@ exports.book_category_get = async function (req, res) {
 
     // each page > 100 records
     if (limit > 100) {
-        res.status(400)
-            .send({
-                success: 0,
-                error_type: 1,
-                error_msg: "limit must less than 100"
-            });
+        res.status(400).send(common_errors.EXCEED_LIMIT);
         return;
     };
 
@@ -333,22 +281,13 @@ exports.book_category_get = async function (req, res) {
     if (offset + limit > 1000) {
         console.log((offset + 1) * limit);
         console.log(offset, limit)
-        res.status(400)
-            .send({
-                success: 0,
-                error_type: 2,
-                error_msg: "exceeding max search limit",
-            });
+        res.status(400).send(common_errors.EXCEED_MAX_SEARCH);
         return;
     };
 
     let desired_category = await Category.findOne({ category: category });
     if (!desired_category) {
-        res.status(400).send({
-            success: 0,
-            error_type: 1,
-            error_msg: "category does not exists"
-        });
+        res.status(400).send(book_errors.BOOK_CATEGORY_NOT_EXIST);
         return;
     }
 
