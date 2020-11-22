@@ -1,19 +1,14 @@
 
-mockdata = require('../helpers/mockdata');
 const Book = require('../models/book');
-var Category = require('../models/category');
+const Category = require('../models/category');
 const RandExp = require('randexp');
 
-var mockBooks = mockdata.mockBooks
 const asin_regex = /(B0|BT)([0-9A-Z]{8})$/;
 
-
-
-// Search books
 /**
  * Search books given keywords
  * @param {*} req query: keyword, limit, offset
- * @param {*} res 
+ * @param {*} res books: object array
  */
 exports.book_search_get = async function (req, res) {
     let keyword = req.query.keyword;
@@ -108,8 +103,8 @@ exports.book_search_get = async function (req, res) {
             break;
     }
 
-    var list_of_keyword = keyword.split(" ");
-    var keywords_for_find = new Array();
+    let list_of_keyword = keyword.split(" ");
+    let keywords_for_find = new Array();
     list_of_keyword.forEach(function (value, index, array) {
         if (value !== "") {
             keywords_for_find.push({
@@ -133,13 +128,17 @@ exports.book_search_get = async function (req, res) {
 
 // testing for find books
 exports.book_find_by_price = async function (req, res) {
-    var price = parseFloat(req.query.price);
-    var q = await Book.exists({ 'price': price });
+    let price = parseFloat(req.query.price);
+    let q = await Book.exists({ 'price': price });
     res.json({ exist: q })
     console.log(q);
 }
 
-// Trending books
+/**
+ * Trending books by review number and rating
+ * @param {*} req 
+ * @param {*} res books: array
+ */
 exports.book_trending_get = async function (req, res) {
     let trending_books = await Book.find({
         "title": { "$nin": [""] },
@@ -156,7 +155,11 @@ exports.book_trending_get = async function (req, res) {
     });
 }
 
-// Hot books
+/**
+ * Hot books by ascending ranks
+ * @param {*} req 
+ * @param {*} res books: array
+ */
 exports.book_hot_get = async function (req, res) {
     let hot_books = await Book.find({
         "title": { "$nin": [""] },
@@ -172,17 +175,18 @@ exports.book_hot_get = async function (req, res) {
         success: 1,
         books: hot_books
     });
-
 }
 
 /**
  * Get book on asin
  * @param {*} req params: asin
- * @param {*} res success: 1, book: object, related: object array; OR err_type, err_msg
+ * @param {*} res success: 1, book: object, related: object array; OR err_type: number, err_msg: string
  */
 exports.book_details_get = async function (req, res) {
     let bookASIN = req.params.asin;
     console.log('Getting book with ASIN=' + bookASIN);
+    
+    // asin does not exists
     let detailed_book = await Book.findOne({ asin: bookASIN });
     if (!detailed_book) {
         console.log('No book found!');
@@ -194,6 +198,7 @@ exports.book_details_get = async function (req, res) {
         return;
     }
     console.log('Found book with ASIN=' + bookASIN);
+    
     let related_asin = detailed_book.related;
     let book_category = detailed_book.category;
 
@@ -201,6 +206,8 @@ exports.book_details_get = async function (req, res) {
     let related_book_details = await Book.find({
         "asin": { "$in": related_asin }
     });
+
+    // related book number < 10
     if (related_book_details.length < 10) {
         console.log("related books number less than 10, is " + related_book_details.length)
         let categoryed_books = await Book.find({
@@ -225,7 +232,7 @@ exports.book_details_get = async function (req, res) {
  * Create a book
  * @param {*} req body: title(String), author(String), category(String), 
  * description(String), price(Number)
- * @param {*} res book: newBook
+ * @param {*} res book: object
  */
 exports.book_create_post = async function (req, res) {
     //Check if necessary inputs are received
@@ -269,6 +276,8 @@ exports.book_create_post = async function (req, res) {
         });
         return;
     }
+
+    // Generate asin
     let ifExists = true;
     let newASIN = null;
     while (ifExists) {
@@ -280,9 +289,10 @@ exports.book_create_post = async function (req, res) {
         e.status = 500;
         throw e;
     }
+
+    // create book in db
     req.body.asin = newASIN;
     let newBook = await Book.create(req.body);
-    console.log(newBook);
     res.json({
         success: 1,
         book: newBook
@@ -292,8 +302,9 @@ exports.book_create_post = async function (req, res) {
 
 /**
  * Get book in a category
- * @param {*} req req params: category; query: limit, offset, sort
- * @param {*} res 
+ * @param {*} req req params: category; 
+ * query: limit, offset, sort
+ * @param {*} res books: object array
  */
 exports.book_category_get = async function (req, res) {
     let category = req.params.category;
@@ -359,7 +370,7 @@ exports.book_category_get = async function (req, res) {
             break;
     }
 
-
+    // get books
     let list_books = await Book.find({ category: desired_category.category })
         .skip(offset)
         .sort([sort_statement])
