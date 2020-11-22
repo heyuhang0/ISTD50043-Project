@@ -46,10 +46,10 @@ exports.book_search_get = async function (req, res) {
 
     // > 1000 records
     if (offset + limit > 1000) {
-        console.log((offset + 1) * limit);
-        console.log(offset, limit)
-        res.status(400)
-            .send(common_errors.EXCEED_MAX_SEARCH);
+        res.json({
+            success: 1,
+            books: []
+        });
         return;
     };
 
@@ -111,6 +111,7 @@ exports.book_search_get = async function (req, res) {
         books: books
     });
     console.log(books.length + " result(s) found");
+    return;
 };
 
 /**
@@ -136,6 +137,7 @@ exports.book_trending_get = async function (req, res) {
         success: 1,
         books: trending_books
     });
+    return;
 }
 
 /**
@@ -162,6 +164,7 @@ exports.book_hot_get = async function (req, res) {
         success: 1,
         books: hot_books
     });
+    return;
 }
 
 /**
@@ -216,6 +219,7 @@ exports.book_details_get = async function (req, res) {
         book: detailed_book,
         related: related_book_details
     });
+    return;
 }
 
 /**
@@ -244,6 +248,7 @@ exports.book_create_post = async function (req, res) {
     // not desired type
     if (typeof req.body.price !== "number"){
         res.status.send(common_errors.BODY_PARAMS_WRONG_TYPE);
+        return;
     }
 
     // Generate asin
@@ -266,6 +271,7 @@ exports.book_create_post = async function (req, res) {
         success: 1,
         book: newBook
     });
+    return;
 };
 
 /**
@@ -302,9 +308,10 @@ exports.book_category_get = async function (req, res) {
 
     // > 1000 records
     if (offset + limit > 1000) {
-        console.log((offset + 1) * limit);
-        console.log(offset, limit)
-        res.status(400).send(common_errors.EXCEED_MAX_SEARCH);
+        res.json({
+            success: 1,
+            books: []
+        });
         return;
     };
 
@@ -332,4 +339,5 @@ exports.book_category_get = async function (req, res) {
         success: 1,
         books: list_books,
     });
+    return;
 };

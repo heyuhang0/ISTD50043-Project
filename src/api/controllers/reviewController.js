@@ -41,9 +41,9 @@ exports.review_for_a_book_get = async function (req, res) {
 
     // sort option construction
     let sort_key = Object.keys(review_sort_keyword).find(key => review_sort_keyword[key] === req.query.sort);
-    if(sort_key){
+    if (sort_key) {
         sort_statement = review_sort_statement[sort_key];
-    }else{
+    } else {
         sort_statement = review_sort_statement.HELPFUL_DESC;
     };
 
@@ -59,9 +59,9 @@ exports.review_for_a_book_get = async function (req, res) {
         return;
     }
 
-    // each page > 100 records, or total > 1000 record
-    if (limit > 100 || offset + limit > 1000) {
-        res.status(400).send(common_errors.EXCEED_MAX_SEARCH);
+    // > 100 per page
+    if (limit > 100) {
+        res.status(400).send(common_errors.EXCEED_LIMIT);
         return;
     };
 
@@ -97,6 +97,17 @@ exports.review_for_a_book_get = async function (req, res) {
         });
     };
 
+
+    // total > 1000 record
+    if (offset + limit > 1000) {
+        res.json({
+            success: 1,
+            reviews: [],
+            user_review: user_review
+        });
+        return;
+    };
+
     // find reviews
     let reviews = await Review.findAll({
         where: { asin: bookASIN },
@@ -114,7 +125,8 @@ exports.review_for_a_book_get = async function (req, res) {
         success: 1,
         reviews: reviews,
         user_review: user_review
-    })
+    });
+    return;
 };
 
 /**
@@ -231,6 +243,7 @@ exports.review_create_post = async function (req, res) {
             email: email
         }
     });
+    return;
 };
 
 
@@ -302,6 +315,7 @@ exports.review_update_post = async function (req, res) {
     });
     if (!old_review) {
         res.status(400).send(review_errors.REVIEWID_NOT_EXIST);
+        return;
     };
 
     // update book review info
@@ -337,6 +351,7 @@ exports.review_update_post = async function (req, res) {
         updated_book: updated_book,
         updated_review: old_review
     });
+    return;
 };
 
 /**
@@ -359,6 +374,7 @@ exports.review_upvote_post = async function (req, res) {
     let review = await Review.findOne({ where: { reviewId: reviewId } });
     if (!review) {
         res.status(400).send(review_errors.REVIEWID_NOT_EXIST);
+        return;
     };
 
     // update review
@@ -376,4 +392,5 @@ exports.review_upvote_post = async function (req, res) {
         success: 1,
         updated_review: updated_review
     });
+    return;
 };

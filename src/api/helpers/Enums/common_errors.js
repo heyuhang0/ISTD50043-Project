@@ -18,11 +18,6 @@ const common_error = Object.freeze({
         success: 0,
         error_type: 3,
         error_msg: "Limit must less than 100"
-    },
-    EXCEED_MAX_SEARCH: {
-        success: 0,
-        error_type: 4,
-        error_msg: "Exceeding max search limit."
     }
 });
 

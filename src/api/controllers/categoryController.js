@@ -13,6 +13,7 @@ exports.all_categories_get = async function (req, res) {
     success: 1,
     category_list: categories
   });
+  return;
 }
 
 /**
@@ -29,4 +30,5 @@ exports.suggested_categories_get = async function (req, res) {
     success: 1,
     category_list: suggested_categories
   });
+  return;
 }
