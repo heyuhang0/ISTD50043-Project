@@ -1,10 +1,10 @@
-var express = require('express');
-var reviewsRouter = require('./reviews');
+const express = require('express');
+const reviewsRouter = require('./reviews');
 
-var router = express.Router();
+const router = express.Router();
 
 // Require controller modules.
-var book_controller = require('../controllers/bookController');
+const book_controller = require('../controllers/bookController');
 let wrapper = fn => (...args) => fn(...args).catch(args[2]);
 
 // search book

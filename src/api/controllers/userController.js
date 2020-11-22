@@ -2,34 +2,46 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const db = require("../models/sequelizeIndex");
 const User = db.user;
-const authentication_secret = process.env.AUTHENTICATION_SECRET;
 
+const authentication_secret = process.env.AUTHENTICATION_SECRET;
 const user_error = require('../helpers/Enums/user_error').user_error;
 const common_error = require('../helpers/Enums/common_errors').common_error;
 const app_constants = require('../helpers/Constants/app_constant').app_constant;
 const email_regex = app_constants.EMAIL_REGEX;
-const password_regex = app_constants.PASSWOR_REGEX;
+const password_regex = app_constants.PASSWORD_REGEX;
+
 /**
  * Login user.
- * @param {*} req body: email, password
- * @param {*} res user info, token OR error type, error message
+ * @param {*} req 
+ * body: email(string, required), 
+ *       password(string, required)
+ * @param {*} res  
+  {
+        success: 1,
+        userId: Number,
+        email: string,
+        name: string,
+        token: string
+   }
+    OR 
+    {success: 0, err_type: Number, err_msg: String} (Enum in common_error or user_error)
  */
 exports.login_post = async function (req, res) {
     let email = req.body.email;
     let password = req.body.password;
     console.log("Logging in user with email=" + email);
     // Incorrect format
-    if (!email || !password ) {
+    if (!email || !password) {
         res.status(400).send(common_error.MISSING_REQUIRED_PARAMS);
         return;
     };
 
-    if (!email_regex.test(email)){
+    if (!email_regex.test(email)) {
         res.status(400).send(user_error.INVALID_EMAIL);
         return;
     };
 
-    if(!password_regex.test(password)){
+    if (!password_regex.test(password)) {
         res.status(400).send(user_error.INVALID_PASSWORD);
         return;
     }
@@ -70,8 +82,21 @@ exports.login_post = async function (req, res) {
 
 /**
  * Register a user.
- * @param {*} req body: email, name, password, confirmed password
- * @param {*} res user info, token OR error type, error message
+ * @param {*} req 
+ * body: email(string, required), 
+ *       name(string, required), 
+ *       password(string, required), 
+ *       password2(string, required)
+ * @param {*} res 
+    {
+        success: 1,
+        userId: Number,
+        email: string,
+        name: string,
+        token: string
+   }
+    OR 
+    {success: 0, err_type: Number, err_msg: String} (Enum in common_error or user_error)
  */
 exports.register_post = async function (req, res) {
     let email = req.body.email;
@@ -146,8 +171,12 @@ exports.register_post = async function (req, res) {
 
 /**
  * Get user's information using token
- * @param {*} req headers: token
- * @param {*} res user's information
+ * @param {*} req 
+ * headers: authorization(string, required)
+ * @param {*} res 
+ * { success:1, userId: Number, name: string, email: string }
+ * OR 
+ * {success: 0, err_type: Number, err_msg: String} (Enum in common_error or user_error)
  */
 exports.current_user_get = async function (req, res) {
     console.log("Getting current user's information");
@@ -166,5 +195,5 @@ exports.current_user_get = async function (req, res) {
         res.status(401).send(common_error.AUTHENTICATION_ERROR);
         return;
     };
-    res.json({ userId: userId, name: name, email: email });
+    res.json({ success: 1, userId: userId, name: name, email: email });
 }

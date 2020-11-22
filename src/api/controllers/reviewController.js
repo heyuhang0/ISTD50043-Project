@@ -15,8 +15,20 @@ const asin_regex = require('../helpers/Constants/app_constant').app_constant.ASI
 
 /**
  * Get review for one book
- * @param {*} req params: asin; query: limit, offset, sort; headers: authorization
- * @param {*} res review list, user's review OR error type, error message
+ * @param {*} req 
+ * params: asin(string, required); 
+ * headers: authorization(string, not required)
+ * query: limit(number, optional, default 20), 
+ *        offset(number, optianl, default 0), 
+ *        sort(string, optional, enum string in review_sort_keyword, not required); 
+ * @param {*} res 
+ * {
+        success: 1,
+        reviews: arrays of objects(book list),
+        user_review: object (default null)
+    }
+    OR
+    {success: 0, err_type: Number, err_msg: String} (Enum in common_error or review_error)
  */
 exports.review_for_a_book_get = async function (req, res) {
     let bookASIN = req.params.asin;
@@ -29,7 +41,6 @@ exports.review_for_a_book_get = async function (req, res) {
 
     // sort option construction
     let sort_key = Object.keys(review_sort_keyword).find(key => review_sort_keyword[key] === req.query.sort);
-    console.log(sort_key);
     if(sort_key){
         sort_statement = review_sort_statement[sort_key];
     }else{
@@ -108,9 +119,25 @@ exports.review_for_a_book_get = async function (req, res) {
 
 /**
  * Create a review
- * @param {*} req params: asin; headers: authorization;
- * body: raitng, summary, reviewText;
- * @param {*} res success, review details, user info; OR error type, error message;
+ * @param {*} req 
+ * params: asin(string, requried); 
+ * headers: authorization(string, required);
+ * body: raitng(Number, required), 
+ *       summary(string, required), 
+ *       reviewText(string, required);
+ * @param {*} res 
+   {
+        success: 1,
+        book: object(book),
+        review: object(review),
+        user: {
+            userId: Number,
+            name: String,
+            email: Email
+        }
+    }
+ * OR
+ * {success: 0, err_type: Number, err_msg: String} (Enum in common_error or review_error)
  */
 exports.review_create_post = async function (req, res) {
     let bookASIN = req.params.asin;
@@ -120,6 +147,7 @@ exports.review_create_post = async function (req, res) {
     let review_text = req.body.reviewText;
     let userId;
 
+    // required feilds
     if (!bookASIN || !rating || !summary || !review_text) {
         res.status(400).send(common_errors.MISSING_REQUIRED_PARAMS);
         return;
@@ -206,9 +234,21 @@ exports.review_create_post = async function (req, res) {
 
 /**
  * Update the revie
- * @param {*} req params: asin, reviewid; headers: authorization;
- * body: rating, summary, text;
- * @param {*} res success, review details; OR error type, error message
+ * @param {*} req 
+ * params: asin(string, required), 
+ *         reviewid(number, required); 
+ * headers: authorization(string, required);
+ * body: rating(number, required), 
+ *       summary(string, required), 
+ *       reviewText(string, required);
+ * @param {*} res
+ * {
+        success: 1,
+        updated_book: object(updated book),
+        updated_review: object(updated review)
+    }
+    OR
+    {success: 0, err_type: Number, err_msg: String} (Enum in common_error or review_error)
  */
 exports.review_update_post = async function (req, res) {
     let reviewId = req.params.reviewid;
@@ -218,13 +258,13 @@ exports.review_update_post = async function (req, res) {
     let summary = req.body.summary;
     let review_text = req.body.reviewText;
 
+    // required feilds
     if (!bookASIN || !reviewId || !rating || !summary || !review_text) {
         res.status(400).send(common_errors.MISSING_REQUIRED_PARAMS);
         return;
     };
 
-    // TODO: delete comment after frontend is ready
-    // *** COMMENT OUT THIS PART FOR EASIER DEVELEPMENT ***
+    // check user is logged in
     if (!token || !token.startsWith("Bearer ")) {
         res.status(401).send(common_errors.AUTHENTICATION_ERROR);
         return;
@@ -240,8 +280,6 @@ exports.review_update_post = async function (req, res) {
         res.status(401).send(common_errors.AUTHENTICATION_ERROR);
         return;
     };
-
-    // *** TILL HERE ***
 
     let book_to_be_review = await Book.findOne({ asin: bookASIN });
     // check valid asin and asin exists in db
@@ -299,13 +337,18 @@ exports.review_update_post = async function (req, res) {
 
 /**
  * Upvote a review
- * @param {*} req params: reviewId
- * @param {*} res success, review details; OR error type, error message
+ * @param {*} req params: reviewId(Number, required)
+ * @param {*} res 
+ * {
+        success: 1,
+        updated_review: object(updated review)
+    }
+ * OR
+ * {success: 0, err_type: Number, err_msg: String} (Enum in common_error or review_error)
  */
 exports.review_upvote_post = async function (req, res) {
-    // *** 983033 CAN BE A DUMMY REVIEW ID ***
-    // TODO: delete dummy reviewid after frontend is ready
-    let reviewId = req.params.reviewid || 983033;
+    // reviewId
+    let reviewId = req.params.reviewid;
     console.log('Upvoting review with reviewId=' + reviewId);
 
     let review = await Review.findOne({ where: { reviewId: reviewId } });

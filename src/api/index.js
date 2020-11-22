@@ -1,25 +1,24 @@
 require('dotenv').config()
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var mongooseMorgan = require('mongoose-morgan');
-var mongoose = require('mongoose');
+const createError = require('http-errors');
+const express = require('express');
+const cookieParser = require('cookie-parser');
+const mongooseMorgan = require('mongoose-morgan');
+const mongoose = require('mongoose');
 
-var mongoDB = process.env.MONGODB_URL;
+const mongoDB = process.env.MONGODB_URL;
 
-var booksRouter = require('./routes/books');
-var categoriesRouter = require('./routes/categories');
-var userRouter = require('./routes/users');
+const booksRouter = require('./routes/books');
+const categoriesRouter = require('./routes/categories');
+const userRouter = require('./routes/users');
 
 // connect to mongo db
 mongoose.connect(mongoDB, { useNewUrlParser: true, useUnifiedTopology: true });
-var db = mongoose.connection;
+const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
 // create app
-var app = express();
-var port = process.env.PORT || 8080;
+let app = express();
+const port = process.env.PORT || 8080;
 
 // middlewares
 app.use(mongooseMorgan({

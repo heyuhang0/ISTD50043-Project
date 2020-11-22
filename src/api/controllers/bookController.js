@@ -11,8 +11,18 @@ const asin_regex = require('../helpers/Constants/app_constant').app_constant.ASI
 
 /**
  * Search books given keywords
- * @param {*} req query: keyword, limit, offset
- * @param {*} res books: object array
+ * @param {*} req 
+ * query: keyword(string, required, not empty), 
+ *        limit(number, optional, default 20), 
+ *        offset(number, optional, default 0), 
+ *        sort(string, optional, enum in book_sort_keyword, optianl)
+ * @param {*} res 
+ * {
+ *      success: 1,
+ *      books: array of objects(book list, can be empty)
+ * }
+ * OR 
+ * {success: 0, err_type: Number, err_msg: String} (Enum in common_error or book_error)
  */
 exports.book_search_get = async function (req, res) {
     let keyword = req.query.keyword;
@@ -104,7 +114,11 @@ exports.book_search_get = async function (req, res) {
 /**
  * Trending books by review number and rating
  * @param {*} req 
- * @param {*} res books: array
+ * @param {*} res 
+ * {
+ *      success: 1
+ *      books: array of objects (book_list, non empty)
+ * }
  */
 exports.book_trending_get = async function (req, res) {
     let trending_books = await Book.find({
@@ -125,7 +139,11 @@ exports.book_trending_get = async function (req, res) {
 /**
  * Hot books by ascending ranks
  * @param {*} req 
- * @param {*} res books: array
+ * @param {*} res 
+ * {
+ *      success: 1
+ *      books: array of objects (book_list, non empty)
+ * }
  */
 exports.book_hot_get = async function (req, res) {
     let hot_books = await Book.find({
@@ -146,8 +164,15 @@ exports.book_hot_get = async function (req, res) {
 
 /**
  * Get book on asin
- * @param {*} req params: asin
- * @param {*} res success: 1, book: object, related: object array; OR err_type: number, err_msg: string
+ * @param {*} req params: asin(string, required)
+ * @param {*} res 
+ * {
+ *      success: 1, 
+ *      book: object(non-empty), 
+ *      related: object array(related 10 book list)
+ * }
+ * OR 
+ * {success: 0, err_type: Number, err_msg: String} (Enum in common_error or book_error)
  */
 exports.book_details_get = async function (req, res) {
     let bookASIN = req.params.asin;
@@ -193,9 +218,19 @@ exports.book_details_get = async function (req, res) {
 
 /**
  * Create a book
- * @param {*} req body: title(String), author(String), category(String), 
- * description(String), price(Number)
- * @param {*} res book: object
+ * @param {*} req 
+ * body: title(String, required), 
+ *       author(String, required), 
+ *       category(String, required), 
+ *       description(String, required), 
+ *       price(Number, required)
+ * @param {*} res 
+ * {
+ *      success: 1,
+ *      book: object(created book)
+ * }
+ * OR 
+ * {success: 0, err_type: Number, err_msg: String} (Enum in common_error or book_error)
  */
 exports.book_create_post = async function (req, res) {
     //Check if necessary inputs are received
@@ -216,7 +251,7 @@ exports.book_create_post = async function (req, res) {
         ifExists = await Book.exists({ asin: newASIN });
     }
     if (!newASIN) {
-        var e = new Error('error when generating ASIN')
+        let e = new Error('error when generating ASIN')
         e.status = 500;
         throw e;
     }
@@ -232,9 +267,17 @@ exports.book_create_post = async function (req, res) {
 
 /**
  * Get book in a category
- * @param {*} req req params: category; 
- * query: limit, offset, sort
- * @param {*} res books: object array
+ * @param {*} req params: category(string, required); 
+ * query: limit(number, optional, default 20), 
+ *        offset(number, optional, default 0), 
+ *        sort(string, optional, enum in book_sort_keyword, optianl)
+ * @param {*} res 
+ * {
+ *      success: 1
+ *      books: object array
+ * }
+ * OR
+ * {success: 0, err_type: Number, err_msg: String} (Enum in common_error or book_error)
  */
 exports.book_category_get = async function (req, res) {
     let category = req.params.category;
