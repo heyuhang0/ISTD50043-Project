@@ -17,7 +17,7 @@ class BookCard extends React.Component {
     axios.get(this.props.url).then((res) => {
       console.log(res.data)
       this.setState({
-        book: res.data.books,
+        book: res.data.book,
         loading: false
       });
     });
