@@ -9,7 +9,7 @@ const Review = db.review;
 const User = db.user;
 
 const authentication_secret = process.env.AUTHENTICATION_SECRET;
-const asin_regex = /(B0|BT)([0-9A-Z]{8})$/;
+const asin_regex = require('../helpers/Constants/app_constant').app_constant.ASIN_REGEX;
 
 /**
  * Get review for one book

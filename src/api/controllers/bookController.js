@@ -5,7 +5,7 @@ const RandExp = require('randexp');
 
 const book_errors = require('../helpers/Enums/book_error').book_error;
 const common_errors = require('../helpers/Enums/common_errors').common_error;
-const asin_regex = /(B0|BT)([0-9A-Z]{8})$/;
+const asin_regex = require('../helpers/Constants/app_constant').app_constant.ASIN_REGEX;
 
 /**
  * Search books given keywords
@@ -115,14 +115,6 @@ exports.book_search_get = async function (req, res) {
     });
     console.log(books.length + " result(s) found");
 };
-
-// testing for find books
-exports.book_find_by_price = async function (req, res) {
-    let price = parseFloat(req.query.price);
-    let q = await Book.exists({ 'price': price });
-    res.json({ exist: q })
-    console.log(q);
-}
 
 /**
  * Trending books by review number and rating

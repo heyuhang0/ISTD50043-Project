@@ -3,10 +3,12 @@ const bcrypt = require('bcryptjs');
 const db = require("../models/sequelizeIndex");
 const User = db.user;
 const authentication_secret = process.env.AUTHENTICATION_SECRET;
-const email_regex = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-const password_regex = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}$/;
+
 const user_error = require('../helpers/Enums/user_error').user_error;
 const common_error = require('../helpers/Enums/common_errors').common_error;
+const app_constants = require('../helpers/Constants/app_constant').app_constant;
+const email_regex = app_constants.EMAIL_REGEX;
+const password_regex = app_constants.PASSWOR_REGEX;
 /**
  * Login user.
  * @param {*} req body: email, password

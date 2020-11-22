@@ -7,9 +7,6 @@ var router = express.Router();
 var book_controller = require('../controllers/bookController');
 let wrapper = fn => (...args) => fn(...args).catch(args[2]);
 
-//TODO: to delete test function
-router.get('/testing', wrapper(book_controller.book_find_by_price));
-
 // search book
 router.get('/', wrapper(book_controller.book_search_get));
 
