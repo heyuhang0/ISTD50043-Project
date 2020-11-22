@@ -1,30 +1,22 @@
 const review_sort_keyword = Object.freeze({
-    RATING_DESC: {
-        name: 'create_desc',
-        sort_statement: ['createdAt', -1]
-    },
-    RATING_ASC: {
-        name: 'create_asc',
-        sort_statement: ['createdAt', 1]
-    },
-    REVIEW_NUM_DESC: {
-        name: 'helpful_desc',
-        sort_statement: ['helpful', -1]
-    },
-    REVIEW_NUM_ASC: {
-        name: 'helpful_desc',
-        sort_statement: ['helpful', 1]
-    },
-    RATING_DESC: {
-        name: 'rating_desc',
-        sort_statement: ['rating', -1]
-    },
-    RATING_ASC: {
-        name: 'rating_asc',
-        sort_statement: ['rating', 1]
-    }
+    CREATE_DESC: 'create_desc',
+    CREATE_ASC: 'create_asc',
+    HELPFUL_DESC: 'helpful_desc',
+    HELPFUL_ASC: 'helpful_desc',
+    RATING_DESC: 'rating_desc',
+    RATING_ASC: 'rating_asc'
+});
+
+const review_sort_statement = Object.freeze({
+    CREATE_DESC: ['createdAt', 'DESC'],
+    CREATE_ASC: ['createdAt', 'ASC'],
+    HELPFUL_DESC: ['helpful', 'DESC'],
+    HELPFUL_ASC: ['helpful', 'ASC'],
+    RATING_DESC: ['rating', 'DESC'],
+    RATING_ASC: ['rating', 'ASC']
 });
 
 module.exports = {
-    review_sort_keyword: review_sort_keyword
+    review_sort_keyword: review_sort_keyword,
+    review_sort_statement: review_sort_statement
 };

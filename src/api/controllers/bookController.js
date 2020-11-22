@@ -5,6 +5,8 @@ const RandExp = require('randexp');
 
 const book_errors = require('../helpers/Enums/book_error').book_error;
 const common_errors = require('../helpers/Enums/common_errors').common_error;
+const book_sort_keyword = require('../helpers/Enums/book_sort').book_sort_keyword;
+const book_sort_statement = require('../helpers/Enums/book_sort').book_sort_statement;
 const asin_regex = require('../helpers/Constants/app_constant').app_constant.ASIN_REGEX;
 
 /**
@@ -69,29 +71,12 @@ exports.book_search_get = async function (req, res) {
         }
     };
 
-    switch (req.query.sort) {
-        case 'review_num_desc':
-            sort_statement = ['review_number', -1];
-            break;
-        case 'review_num_asc':
-            sort_statement = ['review_number', 1];
-            break;
-        case 'rating_desc':
-            sort_statement = ['rating_average', -1];
-            break;
-        case 'rating_asc':
-            sort_statement = ['rating_average', 1];
-            break;
-        case 'category_desc':
-            sort_statement = ['category', -1];
-            break;
-        case 'category_asc':
-            sort_statement = ['category', 1];
-            break;
-        default:
-            sort_statement = ['rating_average', -1];
-            break;
-    }
+    let sort_key = Object.keys(book_sort_keyword).find(key => book_sort_keyword[key] === req.query.sort);
+    if(sort_key){
+        sort_statement = book_sort_statement[sort_key];
+    }else{
+        sort_statement = book_sort_statement.REVIEW_NUM_DESC;
+    };
 
     let list_of_keyword = keyword.split(" ");
     let keywords_for_find = new Array();
@@ -283,23 +268,12 @@ exports.book_category_get = async function (req, res) {
         return;
     }
 
-    switch (req.query.sort) {
-        case 'review_num_desc':
-            sort_statement = ['review_number', -1];
-            break;
-        case 'review_num_asc':
-            sort_statement = ['review_number', 1];
-            break;
-        case 'rating_desc':
-            sort_statement = ['rating_average', -1];
-            break;
-        case 'rating_asc':
-            sort_statement = ['rating_average', 1];
-            break;
-        default:
-            sort_statement = ['rating_average', -1];
-            break;
-    }
+    let sort_key = Object.keys(book_sort_keyword).find(key => book_sort_keyword[key] === req.query.sort);
+    if(sort_key){
+        sort_statement = book_sort_statement[sort_key];
+    }else{
+        sort_statement = book_sort_statement.REVIEW_NUM_DESC;
+    };
 
     // get books
     let list_books = await Book.find({ category: desired_category.category })

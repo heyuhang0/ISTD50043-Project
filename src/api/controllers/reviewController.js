@@ -1,12 +1,14 @@
 
 const jwt = require('jsonwebtoken');
-const Book = require('../models/book');
 const db = require("../models/sequelizeIndex");
-const review_errors = require('../helpers/Enums/review_error').review_error;
-const common_errors = require('../helpers/Enums/common_errors').common_error;
-
 const Review = db.review;
 const User = db.user;
+const Book = require('../models/book');
+
+const review_errors = require('../helpers/Enums/review_error').review_error;
+const common_errors = require('../helpers/Enums/common_errors').common_error;
+const review_sort_keyword = require('../helpers/Enums/review_sort').review_sort_keyword;
+const review_sort_statement = require('../helpers/Enums/review_sort').review_sort_statement;
 
 const authentication_secret = process.env.AUTHENTICATION_SECRET;
 const asin_regex = require('../helpers/Constants/app_constant').app_constant.ASIN_REGEX;
@@ -26,29 +28,13 @@ exports.review_for_a_book_get = async function (req, res) {
     let sort_statement;
 
     // sort option construction
-    switch (req.query.sort) {
-        case 'create_desc':
-            sort_statement = ['createdAt', 'DESC'];
-            break;
-        case 'create_asc':
-            sort_statement = ['createdAt', 'ASC'];
-            break;
-        case 'helpful_desc':
-            sort_statement = ['helpful', 'DESC'];
-            break;
-        case 'helpful_asc':
-            sort_statement = ['helpful', 'ASC'];
-            break;
-        case 'rating_desc':
-            sort_statement = ['rating', 'DESC'];
-            break;
-        case 'rating_asc':
-            sort_statement = ['rating', 'ASC'];
-            break;
-        default:
-            sort_statement = ['helpful', 'DESC'];
-            break;
-    }
+    let sort_key = Object.keys(review_sort_keyword).find(key => review_sort_keyword[key] === req.query.sort);
+    console.log(sort_key);
+    if(sort_key){
+        sort_statement = review_sort_statement[sort_key];
+    }else{
+        sort_statement = review_sort_statement.HELPFUL_DESC;
+    };
 
     console.log('Getting reviews',
         'for book ASIN=' + bookASIN,
