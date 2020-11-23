@@ -7,7 +7,7 @@ const review_error = Object.freeze({
     REVIEWID_NOT_EXIST:{
         success: 0,
         error_type: 22,
-        error_message: "ReviewId does not exists."
+        error_msg: "ReviewId does not exists."
     }
 });
 

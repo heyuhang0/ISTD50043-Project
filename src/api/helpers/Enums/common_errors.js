@@ -12,7 +12,7 @@ const common_error = Object.freeze({
     AUTHENTICATION_ERROR:{
         success: 0,
         error_type: 2,
-        error_message: "Failed to authenticate user."
+        error_msg: "Failed to authenticate user."
     },
     EXCEED_LIMIT: {
         success: 0,
