@@ -9,11 +9,11 @@ const book_sort_keyword = Object.freeze({
 
 const book_sort_statement = Object.freeze({
     RATING_DESC: ['rating_average', -1],
-    RATING_ASC: ['rating_average', -1],
+    RATING_ASC: ['rating_average', 1],
     REVIEW_NUM_DESC: ['review_number', -1],
-    REVIEW_NUM_ASC: ['review_number', -1],
+    REVIEW_NUM_ASC: ['review_number', 1],
     CATEGORY_DESC: ['category', -1],
-    CATEGORY_ASC: ['category', -1]
+    CATEGORY_ASC: ['category', 1]
 });
 
 module.exports = {
