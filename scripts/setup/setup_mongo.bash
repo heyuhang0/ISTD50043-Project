@@ -86,7 +86,7 @@ echo "Craeting index..."
 RUNMONGO () {
   echo "$*" | mongo --quiet $MONGO_LOCAL_URL
 }
-RUNMONGO 'db.books.createIndex({"asin": 1})'
+RUNMONGO 'db.books.createIndex({"asin": "hashed"})'
 RUNMONGO 'db.books.createIndex({"title": 1})'
 RUNMONGO 'db.books.createIndex({"author": 1})'
 RUNMONGO 'db.books.createIndex({"category": 1})'
@@ -94,6 +94,7 @@ RUNMONGO 'db.books.createIndex({"rank": 1})'
 RUNMONGO 'db.books.createIndex({"rating_average": -1})'
 RUNMONGO 'db.books.createIndex({"review_number": -1})'
 RUNMONGO 'db.books.createIndex({"review_number": -1, "rating_average": -1})'
+RUNMONGO 'db.books.createIndex({ name: "text", description: "text" })'
 
 # Finsih setup
 echo "Finished setting up MongoDB."

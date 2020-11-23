@@ -83,15 +83,19 @@ exports.book_search_get = async function (req, res) {
 
     // sort statement
     let sort_key = Object.keys(book_sort_keyword).find(key => book_sort_keyword[key] === req.query.sort);
-    if(sort_key){
+    if (sort_key) {
         sort_statement = book_sort_statement[sort_key];
-    }else{
+    } else {
         sort_statement = book_sort_statement.REVIEW_NUM_DESC;
     };
+
+    // first do a text search with index to narrow down the range
+    let text_search = { $text: { $search: keyword } };
 
     // find records by each keyword
     let list_of_keyword = keyword.split(" ");
     let keywords_for_find = new Array();
+    keywords_for_find.push(text_search);
     list_of_keyword.forEach(function (value, index, array) {
         if (value !== "") {
             keywords_for_find.push({
@@ -248,7 +252,7 @@ exports.book_create_post = async function (req, res) {
     }
 
     // not desired type
-    if (typeof req.body.price !== "number"){
+    if (typeof req.body.price !== "number") {
         res.status.send(common_errors.BODY_PARAMS_WRONG_TYPE);
         return;
     }
@@ -326,9 +330,9 @@ exports.book_category_get = async function (req, res) {
 
     // sort statement
     let sort_key = Object.keys(book_sort_keyword).find(key => book_sort_keyword[key] === req.query.sort);
-    if(sort_key){
+    if (sort_key) {
         sort_statement = book_sort_statement[sort_key];
-    }else{
+    } else {
         sort_statement = book_sort_statement.REVIEW_NUM_DESC;
     };
 
