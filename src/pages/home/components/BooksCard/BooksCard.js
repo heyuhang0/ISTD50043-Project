@@ -9,7 +9,9 @@ function BookItem(props) {
     <List.Item>
       <div className="book-item">
         <div className="book-cover">
-          <img src={props.book.imUrl} alt={props.book.title} />
+          <a className="title" href={"/book/" + escape(props.book.asin)}>
+            <img src={props.book.imUrl} alt={props.book.title} />
+          </a>
         </div>
         <div className="book-content">
           <a className="title" href={"/book/" + escape(props.book.asin)}>
