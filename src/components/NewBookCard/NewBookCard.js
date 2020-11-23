@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Button, Modal, Form, Input, Select, InputNumber, Row, Col } from 'antd';
+import { Card, Button, Modal, Form, Input, Select, InputNumber, Row, Col, message } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import axios from 'axios';
 
@@ -13,7 +13,13 @@ const NewBookForm = ({ visible, onCreate, onCancel }) => {
 
   useEffect(() => {
     axios.get('/api/categories/').then((res) => {
-      setCategories(res.data.category_list.filter(e => e));
+      let categories = Array.from(new Set(
+        res.data.category_list
+          .filter(c => c)
+          .map(c => c.category)
+      ));
+      categories.sort();
+      setCategories(categories);
       setLoading(false);
     });
   }, []);
@@ -70,7 +76,7 @@ const NewBookForm = ({ visible, onCreate, onCancel }) => {
           <Input />
         </Form.Item>
         <Form.Item
-          name="url"
+          name="imUrl"
           label="Cover Image URL"
           rules={[
             {
@@ -106,7 +112,7 @@ const NewBookForm = ({ visible, onCreate, onCancel }) => {
                   option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
                 }
               >
-                {categories.map((c) => <Option key={c._id}>{c.category}</Option>)}
+                {categories.map((c) => <Option key={c}>{c}</Option>)}
               </Select>
             </Form.Item>
           </Col>
@@ -153,7 +159,15 @@ class NewBookCard extends React.Component {
   };
 
   onCreate = values => {
-    console.log(values);
+    axios.post('/api/books/', values)
+      .then(res => {
+        message.success("Book added successfully")
+      })
+      .catch(error => {
+        console.error(error);
+        message.error(error.response ?
+          error.response.data.error_msg : "Unknown error");
+      });
     this.setState({
       formVisible: false,
     });
