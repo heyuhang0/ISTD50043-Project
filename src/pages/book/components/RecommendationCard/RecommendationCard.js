@@ -12,9 +12,11 @@ function BookItem(props) {
     <List.Item>
       <div className="book-item">
         <div className="book-cover">
-          <img src={props.book.imUrl} alt={props.book.title} />
+          <a href={"/book/" + escape(props.book.asin)}>
+            <img src={props.book.imUrl} alt={props.book.title} />
+          </a>
         </div>
-        <div className="book-content">
+        <div className="book-info">
           <a className="title" href={"/book/" + escape(props.book.asin)}>
             <h4>{props.book.title}</h4>
           </a>
@@ -26,7 +28,7 @@ function BookItem(props) {
             disabled
             defaultValue={props.book.rating_average}
           />
-          <span className="rate-num"> {props.book.rating}</span>
+          <span className="rate-num"> {props.book.rating_average.toFixed(1)}</span>
         </div>
       </div>
     </List.Item>

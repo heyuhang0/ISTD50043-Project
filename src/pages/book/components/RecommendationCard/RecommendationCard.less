@@ -10,13 +10,15 @@
     .book-cover {
       float: left;
       width: @cover-width;
-      display: block;
+      display: flex;
+      justify-content: center;
+      overflow: hidden;
       img {
-        width: 100%;
+        height: 5/3 * @cover-width;
       }
     }
 
-    .book-content {
+    .book-info {
       margin-left: @cover-width + 15px;
       .title h4 {
         margin-bottom: 0;

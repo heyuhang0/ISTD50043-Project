@@ -2,7 +2,6 @@ import React from 'react';
 import { Comment, Form, Button, List, Input, Rate, Modal } from 'antd';
 import moment from 'moment';
 import './AddReview.less';
-import { withRouter } from 'react-router-dom';
 import axios from 'axios';
 
 const { TextArea } = Input;
@@ -24,14 +23,14 @@ const Editor = ({ onChange, onChangeSummary, onSubmit, submitting, summary, valu
       />
     </Form.Item>
     <Form.Item>
-      <TextArea rows={1} placeholder="Summary of your review" onChange={onChangeSummary} value={summary} />
+      <TextArea rows={1} placeholder="Headline or summary of your review (required)" onChange={onChangeSummary} value={summary} />
     </Form.Item>
     <Form.Item>
-      <TextArea rows={4} placeholder="Your full review" onChange={onChange} value={value} />
+      <TextArea rows={4} placeholder="Write your review here (required)" onChange={onChange} value={value} />
     </Form.Item>
     <Form.Item>
       <Button htmlType="submit" loading={submitting} onClick={onSubmit} type="primary">
-        Add A Review
+        Submit
       </Button>
       <Modal
         title="Basic Modal"
@@ -89,7 +88,7 @@ class AddReview extends React.Component {
           {
             asin: this.props.asin,
             summary: this.state.summary,
-            reviewTest: this.state.value,
+            reviewText: this.state.value,
             rating: this.state.rate,
           }
         )
@@ -162,33 +161,29 @@ class AddReview extends React.Component {
   }
 
   render() {
-    const { comments, submitting, summary, value, rate, submitted, visible } = this.state;
+    const { comments, submitting, summary, value, rate, visible } = this.state;
     // console.log(submitted)
 
     return (
-      <>
-        <Comment
-          content={
-            <Editor
-              onChange={this.handleChange}
-              onChangeSummary={this.handleChangeSummary}
-              onChangeRate={this.handleChangeRate}
-              onSubmit={this.handleSubmit}
-              submitting={submitting}
-              summary={summary}
-              value={value}
-              rate={rate}
-              visible={visible}
-              handleOk={this.handleOk}
-              handleCancel={this.handleCancel}
-            />
-          }
+      <div>
+        <Editor
+          onChange={this.handleChange}
+          onChangeSummary={this.handleChangeSummary}
+          onChangeRate={this.handleChangeRate}
+          onSubmit={this.handleSubmit}
+          submitting={submitting}
+          summary={summary}
+          value={value}
+          rate={rate}
+          visible={visible}
+          handleOk={this.handleOk}
+          handleCancel={this.handleCancel}
         />
         {comments.length > 0 && <CommentList comments={comments} />}
-      </>
+      </div>
     );
 
   };
 };
 
-export default withRouter(AddReview)
+export default AddReview

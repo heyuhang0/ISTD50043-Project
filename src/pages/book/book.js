@@ -6,6 +6,7 @@ import './book.less';
 import ReviewComment from './components/ReviewBox/ReviewComment';
 import AddReview from './components/AddReview/AddReview';
 import RecommendationCard from './components/RecommendationCard/RecommendationCard';
+import GlobalFooter from '../../components/GlobalFooter/GlobalFooter'
 
 const Content = Layout;
 
@@ -17,20 +18,21 @@ function Book(props) {
       {/* <h1>Book Page for Book {asin}</h1> */}
       <Content className="book-content">
         <Row className="book-row">
-          <Col xs={16} sm={16} md={16} lg={16}>
+          <Col span={17}>
             <BookCard url={`/api/books/${asin}`} />
-            <Card title="Start your review here">
+            {/* <Card title="Start your review here">
               <AddReview title="Start your review" asin={`${asin}`} />
-            </Card>
+            </Card> */}
             <Card title="Community Reviews">
-              <ReviewComment url={`/api/books/${asin}/reviews`} />
+              <ReviewComment url={`/api/books/${asin}/reviews`} perPage={10} />
             </Card>
           </Col>
-          <Col xs={8} sm={8} md={8} lg={8}>
+          <Col span={7}>
             <RecommendationCard title="People also viewed" url={`/api/books/${asin}`} />
           </Col>
         </Row>
       </Content>
+      <GlobalFooter />
     </Layout>
   );
 }

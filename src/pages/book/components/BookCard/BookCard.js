@@ -1,8 +1,9 @@
 import React from 'react';
-import { Card, Rate } from 'antd';
+import { Card, Rate, Typography } from 'antd';
 import axios from 'axios';
 import './BookCard.less';
 
+const { Paragraph } = Typography;
 
 class BookCard extends React.Component {
   constructor(props) {
@@ -25,20 +26,10 @@ class BookCard extends React.Component {
 
   render() {
     if (this.state.loading) {
-      return <div></div>
+      return <Card loading={true}></Card>;
     }
-    // console.log("testing")
-    // console.log(this.state.book)
-    // console.log(typeof(this.state.book))
-    // console.log(this.state.book.rating)
-    // console.log(JSON.stringify(this.state.book.rating))
-    // console.log(2)
-    // console.log(typeof(2))
-    // console.log(Number(this.state.book.rating))
-    // console.log(typeof(Number(this.state.book.rating)))
-    const rating = this.state.book.rating_average
-    // console.log(typeof (rating))
-    // console.log(rating)
+
+    const rating = this.state.book.rating_average;
 
     return (
       <div className="book-item">
@@ -46,10 +37,8 @@ class BookCard extends React.Component {
           <div className="book-cover">
             <img src={this.state.book.imUrl} alt={this.state.book.title} />
           </div>
-          <div className="book-content">
-            <a className="title" href={"/book/" + escape(this.state.book.asin)}>
-              <h4>{this.state.book.title}</h4>
-            </a>
+          <div className="book-info">
+            <h1 className="title">{this.state.book.title}</h1>
             <p className="author">
               by <a href={"/search?q=" + escape(this.state.book.author)}>{this.state.book.author}</a>
             </p>
@@ -58,12 +47,13 @@ class BookCard extends React.Component {
               disabled
               defaultValue={rating}
             />
-            <span className="rate-num"> {this.state.book.rating_average}</span>
-            <p className="ratecount"> {this.state.book.rating_total} reviews</p>
-            <p className="decription">
-              Description: {this.state.book.description}
-            </p>
-
+            <span className="rate-num">{this.state.book.rating_average.toFixed(1)}</span>
+            <p className="rate-count">{this.state.book.rating_total} reviews</p>
+            <Paragraph
+              className="description"
+              ellipsis={{ rows: 8, expandable: true, symbol: 'more' }}>
+              {this.state.book.description}
+            </Paragraph>
           </div>
         </Card>
 

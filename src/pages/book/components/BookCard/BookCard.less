@@ -1,51 +1,51 @@
 @import '~antd/dist/antd.less';
 
-.book-item {
 .book-card .ant-card-body {
-  padding-top: 5px;
-  padding-bottom: 5px;
+  padding-top: 20px;
+  padding-bottom: 20px;
 
-  @cover-width: 160px;
+  @cover-width: 200px;
 
-    .book-cover {
-      float: left;
-      width: @cover-width;
-      display: block;
-      img {
-        width: 100%;
-      }
-    }
-  
-    .book-content {
-      margin-left: @cover-width + 15px;
-      .title h1 {
-        margin-bottom: 0;
-      }
-      .author {
-        margin-bottom: 5px;
-        color: @text-color-secondary;
-        a {
-          color: @text-color-secondary;
-          &:hover {
-            color: @primary-color;
-          }
-        }
-      }
-      .ant-rate {
-        transform: scale(0.7);
-        margin-left: -20px;
-        margin-right: -12px;
-        color: @primary-color;
-      }
-      .rate-num {
-        color: @primary-color;
-      }
-      .ratecount {
-          color: @text-color-secondary;
-      }
-
-      }
+  .book-cover {
+    float: left;
+    width: @cover-width;
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+    img {
+      height: 5/3 * @cover-width;
     }
   }
+  
+  .book-info {
+    margin-left: @cover-width + 15px;
+    .title {
+      margin-bottom: 0;
+      font-size: 200%;
+    }
+    .author {
+      margin-bottom: 5px;
+      color: @text-color-secondary;
+      font-size: 110%;
+      a {
+        color: @text-color-secondary;
+        &:hover {
+          color: @primary-color;
+        }
+      }
+    }
+    .ant-rate {
+      color: @primary-color;
+    }
+    .rate-num {
+      color: @primary-color;
+      font-size: 120%;
+      margin-left: 10px;
+    }
+    .rate-count {
+      color: @text-color-secondary;
+    }
+  }
+}
 
 
