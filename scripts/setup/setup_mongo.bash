@@ -94,7 +94,7 @@ RUNMONGO 'db.books.createIndex({"rank": 1})'
 RUNMONGO 'db.books.createIndex({"rating_average": -1})'
 RUNMONGO 'db.books.createIndex({"review_number": -1})'
 RUNMONGO 'db.books.createIndex({"review_number": -1, "rating_average": -1})'
-RUNMONGO 'db.books.createIndex({ name: "text", description: "text" })'
+RUNMONGO 'db.books.createIndex({"title": "text", "author": "text" })'
 
 # Finsih setup
 echo "Finished setting up MongoDB."
