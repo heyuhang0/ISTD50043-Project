@@ -30,7 +30,7 @@ class SearchBox extends React.Component {
     return (
       <div className="search-box">
         <Search
-          placeholder="Title / Author / Category"
+          placeholder="Title / Author / ASIN"
           allowClear
           enterButton
           size="large"
