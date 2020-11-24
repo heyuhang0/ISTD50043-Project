@@ -7,7 +7,7 @@ const BookSchema = new Schema({
         required: [true, "'title' field required"]
     },
     author: {
-        type: String, 
+        type: String,
         required: [true, "'author' field required"]
     },
     price: {
@@ -15,32 +15,35 @@ const BookSchema = new Schema({
         required: [true, "'price' field required"]
     },
     category: {
-        type: String, 
+        type: String,
         required: [true, "'categories' field required"]
     },
     asin: {
-        type: String, 
+        type: String,
         required: [true, "'asin' field required"]
     },
-    imUrl: String, 
+    imUrl: String,
     description: {
         type: String,
         required: [true, "'description' field required"]
-    }, 
+    },
     related: [String],
-    rank: Number, 
+    rank: {
+        type: Number,
+        default: -1
+    },
     review_number: {
         type: Number,
-        default: 0   
-    }, 
+        default: 0
+    },
     rating_average: {
-        type: Number, 
+        type: Number,
         default: 0
-    }, 
-    rating_total:{
-        type: Number, 
+    },
+    rating_total: {
+        type: Number,
         default: 0
-    } 
+    }
 });
 
 const Book = mongoose.model('books', BookSchema);
