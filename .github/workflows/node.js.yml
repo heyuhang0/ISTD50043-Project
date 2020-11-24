@@ -26,7 +26,7 @@ jobs:
     - run: npm ci
     - run: npm run build --if-present
       env:
-        NODE_OPTIONS: "--max-old-space-size=6656",
+        NODE_OPTIONS: "--max-old-space-size=6656"
         GENERATE_SOURCEMAP: "false"
 #     - run: npm test
 
