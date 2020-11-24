@@ -18,6 +18,7 @@ const Editor = ({ onSubmit, submitting, initialValues }) => {
         name="rating"
         rules={[{
           required: true,
+          message: 'Overall rating is required',
         }]}
       >
         <Rate />
@@ -26,6 +27,7 @@ const Editor = ({ onSubmit, submitting, initialValues }) => {
         name="summary"
         rules={[{
           required: true,
+          message: 'Summary is required',
         }]}
       >
         <Input placeholder="Headline or summary of your review (required)" />
@@ -34,6 +36,7 @@ const Editor = ({ onSubmit, submitting, initialValues }) => {
         name="reviewText"
         rules={[{
           required: true,
+          message: 'Review is required',
         }]}
       >
         <TextArea rows={3} placeholder="Write your review here (required)" />
