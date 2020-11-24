@@ -1,11 +1,14 @@
 import React, { createElement, useState } from 'react';
-import { Comment, Tooltip, List, Rate, Typography, Button } from 'antd';
+import { Comment, Tooltip, List, Rate, Typography, Button, Select } from 'antd';
 import { LikeFilled, LikeOutlined, DownOutlined } from '@ant-design/icons';
+import Icon from '@ant-design/icons';
 import axios from 'axios';
 import UserAvatar from '../UserAvatar/UserAvatar';
+import { ReactComponent as SortSvg } from './assets/sort_icon.svg';
 import './ReviewComment.less';
 
 const { Paragraph } = Typography;
+const {Option} = Select;
 
 function ReviewItem(props) {
   const [likes, setLikes] = useState(props.review.helpful);
@@ -45,7 +48,7 @@ function ReviewItem(props) {
         actions={actions}
         author={props.review.user.name}
         avatar={<UserAvatar username={props.review.user.name} />}
-        datetime={props.review.updatedAt.substring(0, 10)}
+        datetime={props.review.createdAt.substring(0, 10)}
         content={
           <div>
             <Rate
@@ -73,6 +76,7 @@ class ReviewComment extends React.Component {
       reachedEnd: false,
       reviews: [],
       offset: 0,
+      sortKey: "helpful_desc",
     };
   }
 
@@ -89,6 +93,7 @@ class ReviewComment extends React.Component {
       params: {
         limit: this.props.perPage,
         offset: this.state.offset,
+        sort: this.state.sortKey,
       }
     }).then(res => {
       const resLength = res.data.reviews.length;
@@ -131,6 +136,27 @@ class ReviewComment extends React.Component {
 
     return (
       <div className="review-comment">
+        <Select
+          className="sort-selector"
+          defaultValue={this.state.sortKey}
+          suffixIcon={<Icon component={SortSvg} />}
+          onChange={sortKey => {
+            if (sortKey === this.state.sortKey) {
+              return;
+            }
+            this.setState({
+              initLoading: true,
+              loading: false,
+              reachedEnd: false,
+              reviews: [],
+              offset: 0,
+              sortKey: sortKey,
+            }, () => this.onLoadMore());
+          }}
+        >
+          <Option value="helpful_desc">Most Helpful</Option>
+          <Option value="create_desc">Most Recent</Option>
+        </Select>
         <List
           loading={initLoading}
           loadMore={loadMore}
