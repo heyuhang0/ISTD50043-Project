@@ -1,10 +1,14 @@
 import React from 'react';
-import { List, Rate, Button } from 'antd';
+import { withRouter } from 'react-router-dom';
+import { List, Rate, Button, Select } from 'antd';
+import Icon from '@ant-design/icons';
 import { DownOutlined } from '@ant-design/icons';
 import axios from 'axios';
+import NewBookCard from '../../../../components/NewBookCard/NewBookCard';
+import { ReactComponent as SortSvg } from './assets/sort_icon.svg';
 import './SearchResults.less';
-import NewBookCard from '../../../../components/NewBookCard/NewBookCard'
 
+const { Option } = Select;
 
 function BookItem(props) {
   return (
@@ -35,7 +39,7 @@ function BookItem(props) {
   );
 }
 
-class BooksCard extends React.Component {
+class SearchResults extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -44,6 +48,7 @@ class BooksCard extends React.Component {
       loading: false,
       reachedEnd: false,
       offset: 0,
+      sortKey: this.props.sortKey || "review_num_desc",
     };
   }
 
@@ -61,6 +66,10 @@ class BooksCard extends React.Component {
     } else {
       queryUrl = '/api/books/search';
       queryParams.keyword = this.props.keyword;
+    }
+
+    if (this.state.sortKey) {
+      queryParams.sort = this.state.sortKey;
     }
 
     axios.get(queryUrl, {
@@ -101,7 +110,7 @@ class BooksCard extends React.Component {
           onClick={this.onLoadMore}
           loading={loading}
           shape="round"
-          icon={<DownOutlined />}
+          icon={<DownOutlined height={20} />}
           size="large"
         >
           View more
@@ -114,16 +123,40 @@ class BooksCard extends React.Component {
       );
 
     return (
-      <List
-        className="search-results"
-        dataSource={books}
-        loading={initLoading}
-        loadMore={!initLoading ? loadMore : null}
-        renderItem={book => <BookItem book={book} />}
-      />
+      <div>
+        <Select
+          className="sort-selector"
+          defaultValue={this.state.sortKey}
+          suffixIcon={<Icon component={SortSvg} />}
+          onChange={sortKey => {
+            if (sortKey === this.state.sortKey) {
+              return;
+            }
+            this.props.history.push(`/search?q=${escape(this.props.keyword)}&sort=${escape(sortKey)}`);
+            this.setState({
+              books: [],
+              initLoading: true,
+              loading: false,
+              reachedEnd: false,
+              offset: 0,
+              sortKey: sortKey,
+            }, () => this.onLoadMore());
+          }}
+        >
+          <Option value="review_num_desc">Most Commented</Option>
+          <Option value="rating_desc">Top Rated</Option>
+        </Select>
+        <List
+          className="search-results"
+          dataSource={books}
+          loading={initLoading}
+          loadMore={!initLoading ? loadMore : null}
+          renderItem={book => <BookItem book={book} />}
+        />
+      </div>
     )
   }
 }
 
-export default BooksCard;
+export default withRouter(SearchResults);
 

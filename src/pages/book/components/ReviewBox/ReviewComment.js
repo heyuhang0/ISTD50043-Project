@@ -1,6 +1,6 @@
 import React, { createElement, useState } from 'react';
 import { Comment, Tooltip, List, Rate, Typography, Button } from 'antd';
-import { LikeFilled, LikeOutlined } from '@ant-design/icons';
+import { LikeFilled, LikeOutlined, DownOutlined } from '@ant-design/icons';
 import axios from 'axios';
 import UserAvatar from '../UserAvatar/UserAvatar';
 import './ReviewComment.less';
@@ -123,7 +123,9 @@ class ReviewComment extends React.Component {
             lineHeight: '32px',
           }}
         >
-          <Button onClick={this.onLoadMore} loading={loading}>More reviews</Button>
+          <Button onClick={this.onLoadMore} loading={loading} icon={<DownOutlined />}>
+            More reviews
+          </Button>
         </div>
       ) : null;
 

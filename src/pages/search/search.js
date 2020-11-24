@@ -13,12 +13,13 @@ class Search extends React.Component {
   render() {
     const params = queryString.parse(this.props.location.search);
     const keyword = unescape(params.q);
+    const sortKey = params.sort ? unescape(params.sort) : null;
     return (
       <Layout className="search-results-page">
         <GlobalHeader reloadOnSearch defaultValue={keyword} />
         <Content className="search-results-content">
           <div className="results-col">
-            <SearchResults keyword={keyword} perPage={15} />
+            <SearchResults keyword={keyword} sortKey={sortKey} perPage={15} />
           </div>
         </Content>
         <GlobalFooter />
