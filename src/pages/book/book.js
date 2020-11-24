@@ -6,6 +6,7 @@ import './book.less';
 import ReviewComment from './components/ReviewBox/ReviewComment';
 import AddReview from './components/AddReview/AddReview';
 import RecommendationCard from './components/RecommendationCard/RecommendationCard';
+import GlobalHeader from '../../components/GlobalHeader/GlobalHeader'
 import GlobalFooter from '../../components/GlobalFooter/GlobalFooter'
 
 const Content = Layout;
@@ -14,7 +15,7 @@ function Book(props) {
   let { asin } = useParams();
   return (
     <Layout className="book">
-      {/* <h1>Book Page for Book {asin}</h1> */}
+      <GlobalHeader />
       <Content className="book-content">
         <Row className="book-row">
           <Col xs={24} sm={24} lg={17}>
