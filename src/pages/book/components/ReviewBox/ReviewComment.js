@@ -119,23 +119,12 @@ class ReviewComment extends React.Component {
       loading: false,
       reachedEnd: false,
       reviews: [],
+      offset: 0,
     };
   }
 
   componentDidMount() {
-    axios.get(
-      this.props.url, {
-      params: {
-        limit: this.props.perPage,
-        offset: 0,
-      }
-    }).then(res => {
-      this.setState({
-        reviews: res.data.reviews,
-        initLoading: false,
-        reachedEnd: res.data.reviews.length < this.props.perPage,
-      });
-    });
+    this.onLoadMore();
   }
 
   onLoadMore = () => {
@@ -146,14 +135,25 @@ class ReviewComment extends React.Component {
       this.props.url, {
       params: {
         limit: this.props.perPage,
-        offset: this.state.reviews.length,
+        offset: this.state.offset,
       }
     }).then(res => {
-      const reviews = this.state.reviews.concat(res.data.reviews);
+      const resLength = res.data.reviews.length;
+      // exclude user's own review
+      let userReviewId = -1;
+      if (res.data.user_review) {
+        userReviewId = res.data.user_review.reviewId;
+      }
+      const reviews = this.state.reviews.concat(
+        res.data.reviews
+          .filter(r => r.reviewId !== userReviewId)
+      );
       this.setState({
         reviews: reviews,
+        offset: this.state.offset + resLength,
+        reachedEnd: resLength < this.props.perPage,
         loading: false,
-        reachedEnd: res.data.reviews.length < this.props.perPage,
+        initLoading: false,
       });
     });
   };
