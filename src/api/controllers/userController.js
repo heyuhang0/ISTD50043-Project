@@ -155,7 +155,7 @@ exports.register_post = async function (req, res) {
 
     const token = jwt.sign(
         {
-            user: created_user.userId,
+            userId: created_user.userId,
             email: email,
             name: name
         },
