@@ -16,7 +16,6 @@ class BookCard extends React.Component {
 
   componentDidMount() {
     axios.get(this.props.url).then((res) => {
-      console.log(res.data)
       this.setState({
         book: res.data.book,
         loading: false

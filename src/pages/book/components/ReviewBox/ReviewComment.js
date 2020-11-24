@@ -12,7 +12,6 @@ function ReviewItem(props) {
   const [action, setAction] = useState(null);
 
   const like = () => {
-    console.log(action);
     if (action !== 'liked') {
       axios
         .post(`/api/books/${props.review.asin}/reviews/${props.review.reviewId}/upvote`,
@@ -20,9 +19,6 @@ function ReviewItem(props) {
             reviewid: props.review.reviewId
           }
         )
-        .then(res => {
-          console.log(res);
-        })
         .catch(err =>
           console.log(err))
 

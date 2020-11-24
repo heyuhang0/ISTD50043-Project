@@ -12,7 +12,6 @@ const Content = Layout;
 
 function Book(props) {
   let { asin } = useParams();
-  console.log(props)
   return (
     <Layout className="book">
       {/* <h1>Book Page for Book {asin}</h1> */}
@@ -36,8 +35,5 @@ function Book(props) {
     </Layout>
   );
 }
-
-
-
 
 export default withRouter(Book);
