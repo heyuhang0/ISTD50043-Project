@@ -16,9 +16,15 @@ function GlobalHeader(props) {
         placeholder="Title / Author / ASIN"
         allowClear
         enterButton
+        defaultValue={props.defaultValue}
         onSearch={keyword => {
-          console.log(keyword);
+          if (!keyword) {
+            return;
+          }
           props.history.push('/search?q=' + escape(keyword));
+          if (props.reloadOnSearch) {
+            window.location.reload();
+          }
         }}
         size="large"
       />

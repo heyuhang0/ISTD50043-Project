@@ -23,6 +23,9 @@ class SearchBox extends React.Component {
   }
 
   onSearch(keyword) {
+    if (!keyword) {
+      return;
+    }
     this.props.history.push('/search?q=' + escape(keyword));
   }
 
