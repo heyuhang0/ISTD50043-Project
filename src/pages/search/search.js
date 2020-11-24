@@ -18,7 +18,7 @@ class Search extends React.Component {
         <GlobalHeader reloadOnSearch defaultValue={keyword} />
         <Content className="search-results-content">
           <div className="results-col">
-            <SearchResults keyword={keyword} />
+            <SearchResults keyword={keyword} perPage={15} />
           </div>
         </Content>
         <GlobalFooter />
