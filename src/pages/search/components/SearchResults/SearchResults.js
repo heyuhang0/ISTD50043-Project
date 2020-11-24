@@ -51,9 +51,21 @@ class BooksCard extends React.Component {
     this.setState({
       loading: true,
     });
-    axios.get('/api/books/search', {
+
+    let queryUrl, queryParams = {};
+
+    const categoryRe = /^category\:\s?\"(.*)\"$/;
+    if (categoryRe.test(this.props.keyword)) {
+      const category = categoryRe.exec(this.props.keyword)[1];
+      queryUrl = '/api/categories/' + escape(category);
+    } else {
+      queryUrl = '/api/books/search';
+      queryParams.keyword = this.props.keyword;
+    }
+
+    axios.get(queryUrl, {
       params: {
-        keyword: this.props.keyword,
+        ...queryParams,
         limit: this.props.perPage,
         offset: this.state.offset,
       }
