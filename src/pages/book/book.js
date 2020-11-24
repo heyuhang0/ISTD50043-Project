@@ -20,10 +20,10 @@ function Book(props) {
         <Row className="book-row">
           <Col xs={24} sm={24} lg={17}>
             <BookCard url={`/api/books/${asin}`} />
-            {/* <Card title="Start your review here">
-              <AddReview title="Start your review" asin={`${asin}`} />
-            </Card> */}
-            <Card title="Community Reviews">
+            <Card title="Your review" className="new-review-card">
+              <AddReview asin={`${asin}`} />
+            </Card>
+            <Card title="Community reviews" className="reviews-card">
               <ReviewComment url={`/api/books/${asin}/reviews`} perPage={10} />
             </Card>
           </Col>
