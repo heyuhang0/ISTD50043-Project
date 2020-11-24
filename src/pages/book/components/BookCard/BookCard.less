@@ -46,6 +46,39 @@
       color: @text-color-secondary;
     }
   }
+
+  @media (max-width: 575px) {
+    @cover-width: 120px;
+
+    .book-cover {
+      width: @cover-width;
+      img {
+        height: 5/3 * @cover-width;
+      }
+    }
+
+    .book-info {
+      margin-left: @cover-width + 20px;
+      .title {
+        font-size: 150%;
+      }
+    }
+  }
+
+  @media (max-width: 450px) {
+    .book-cover {
+      float: none;
+      width: 100%;
+      img {
+        height: 300px;
+      }
+    }
+
+    .book-info {
+      margin-left: 10px;
+      margin-right: 10px;
+    }
+  }
 }
 
 
