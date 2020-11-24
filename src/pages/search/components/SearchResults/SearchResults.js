@@ -54,7 +54,7 @@ class BooksCard extends React.Component {
 
     let queryUrl, queryParams = {};
 
-    const categoryRe = /^category\:\s?\"(.*)\"$/;
+    const categoryRe = /^category:\s?"(.*)"$/;
     if (categoryRe.test(this.props.keyword)) {
       const category = categoryRe.exec(this.props.keyword)[1];
       queryUrl = '/api/categories/' + escape(category);
