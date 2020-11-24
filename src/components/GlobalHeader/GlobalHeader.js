@@ -8,9 +8,11 @@ const { Search } = Input;
 function GlobalHeader(props) {
   return (
     <header className="global-header">
-      <a onClick={() => props.history.push('/')}>
-        <img alt="Logo" className="text-logo" />
-      </a>
+      <img
+        className="text-logo"
+        alt="Logo"
+        onClick={() => props.history.push('/')}
+      />
       <Search
         className="search-box"
         placeholder="Title / Author / ASIN"
