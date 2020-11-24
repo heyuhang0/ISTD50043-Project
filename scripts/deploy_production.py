@@ -11,6 +11,7 @@ import time
 from pathlib import Path, PurePosixPath
 from typing import Any, Callable, Dict, List, Optional
 import boto3
+import boto3.session
 import paramiko
 
 
@@ -34,7 +35,8 @@ class EC2Config():
 
     @staticmethod
     def get_latest_ubuntu_ami() -> str:
-        images = boto3.client('ec2').describe_images(Filters=[{
+        session = boto3.session.Session()
+        images = session.client('ec2').describe_images(Filters=[{
             'Name': 'name',
             'Values': ['ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server*']
         }])
@@ -119,7 +121,8 @@ class EC2Instance():
         self.app_name = app_name
         self.ssh_config = ssh_config
 
-        self._ec2_client = boto3.client('ec2')
+        self._boto3_session = boto3.session.Session()
+        self._ec2_client = self._boto3_session.client('ec2')
         self._session_id = str(int(time.time()))
         self._logger = logger or logging.getLogger(self.__class__.__name__)
 
@@ -261,7 +264,7 @@ class EC2Instance():
     def terminate(self) -> None:
         if not self.exists:
             raise self.NotExistsException
-        ec2 = boto3.resource('ec2')
+        ec2 = self._boto3_session.resource('ec2')
         ec2.instances.filter(InstanceIds=[self.instace_id]).terminate()
 
     def run_command(self, command: str) -> List[str]:

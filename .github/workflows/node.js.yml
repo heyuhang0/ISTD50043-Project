@@ -26,7 +26,7 @@ jobs:
     - run: npm ci
     - run: npm run build --if-present
       env:
-        NODE_OPTIONS: "--max-old-space-size=6656",
+        NODE_OPTIONS: "--max-old-space-size=6656"
         GENERATE_SOURCEMAP: "false"
 #     - run: npm test
 
@@ -40,7 +40,7 @@ jobs:
       - run: |
           python -m pip install --upgrade pip
           pip install paramiko boto3
-      - run: python ./scripts/deploy_ec2.py --key "$AWS_EC2_KEY_NAME:$AWS_EC2_KEY"
+      - run: python ./scripts/deploy_production.py --key "$AWS_EC2_KEY_NAME:$AWS_EC2_KEY"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
