@@ -76,38 +76,37 @@ class BooksCard extends React.Component {
 
   render() {
     const { initLoading, loading, books, reachedEnd } = this.state;
-    const loadMore =
-      !initLoading && !reachedEnd ? (
-        <div
-          style={{
-            textAlign: 'center',
-            marginTop: 12,
-            height: 32,
-            lineHeight: '32px',
-          }}
+    const loadMore = !reachedEnd ? (
+      <div
+        style={{
+          textAlign: 'center',
+          marginTop: 12,
+          height: 32,
+          lineHeight: '32px',
+        }}
+      >
+        <Button
+          onClick={this.onLoadMore}
+          loading={loading}
+          shape="round"
+          icon={<DownOutlined />}
+          size="large"
         >
-          <Button
-            onClick={this.onLoadMore}
-            loading={loading}
-            shape="round"
-            icon={<DownOutlined />}
-            size="large"
-          >
-            View more
+          View more
           </Button>
+      </div>
+    ) : (
+        <div style={{ marginTop: 12 }}>
+          <NewBookCard />
         </div>
-      ) : (
-          <div style={{ marginTop: 12 }}>
-            <NewBookCard />
-          </div>
-        );
+      );
 
     return (
       <List
         className="search-results"
         dataSource={books}
         loading={initLoading}
-        loadMore={loadMore}
+        loadMore={!initLoading ? loadMore : null}
         renderItem={book => <BookItem book={book} />}
       />
     )
