@@ -76,7 +76,7 @@ exports.review_for_a_book_get = async function (req, res) {
         token = token.substring(7, token.length);
         try {
             this_user = jwt.verify(token, authentication_secret);
-            userId = this_user.user;
+            userId = this_user.userId;
             email = this_user.email;
             name = this_user.name
         } catch (err) {
@@ -291,7 +291,7 @@ exports.review_update_post = async function (req, res) {
     token = token.substring(7, token.length);
     try {
         this_user = jwt.verify(token, authentication_secret);
-        userId = this_user.user;
+        userId = this_user.userId;
         email = this_user.email;
         name = this_user.name
     } catch (err) {
