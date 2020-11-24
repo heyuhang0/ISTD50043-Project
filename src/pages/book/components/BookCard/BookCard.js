@@ -48,7 +48,7 @@ class BookCard extends React.Component {
               defaultValue={rating}
             />
             <span className="rate-num">{this.state.book.rating_average.toFixed(1)}</span>
-            <p className="rate-count">{this.state.book.rating_total} reviews</p>
+            <p className="rate-count">{this.state.book.review_number} reviews</p>
             <Paragraph
               className="description"
               ellipsis={{ rows: 8, expandable: true, symbol: 'more' }}>
