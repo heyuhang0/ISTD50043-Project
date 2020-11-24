@@ -177,9 +177,9 @@ exports.review_create_post = async function (req, res) {
     token = token.substring(7, token.length);
     try {
         this_user = jwt.verify(token, authentication_secret);
-        userId = this_user.user;
+        userId = this_user.userId;
         email = this_user.email;
-        name = this_user.name
+        name = this_user.name;
     } catch (err) {
         res.status(401).send(common_errors.AUTHENTICATION_ERROR);
         return;
