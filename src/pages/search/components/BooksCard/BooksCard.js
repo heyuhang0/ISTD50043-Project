@@ -9,11 +9,13 @@ function BookItem(props) {
         <List.Item>
             <div className="book-item">
                 <div className="book-cover">
-                    <img src={props.book.imUrl} alt={props.book.title} />
+                    <a href={"/book/" + escape(props.book.asin)}>
+                        <img src={props.book.imUrl} alt={props.book.title} />
+                    </a>
                 </div>
                 <div className="book-content">
                     <a className="title" href={"/book/" + escape(props.book.asin)}>
-                        <h4>{props.book.title}</h4>
+                        <h3>{props.book.title}</h3>
                     </a>
                     <p className="author">
                         by <a href={"/search?q=" + escape(props.book.author)}>{props.book.author}</a>
@@ -23,7 +25,8 @@ function BookItem(props) {
                         disabled
                         defaultValue={props.book.rating_average}
                     />
-                    <span className="rate-num"> {props.book.rating_average.toFixed(1)}</span>
+                    <span className="rate-num">{props.book.rating_average.toFixed(1)}</span>
+                    <p className="rate-count">{props.book.review_number} reviews</p>
                 </div>
             </div>
         </List.Item>
@@ -56,13 +59,12 @@ class BooksCard extends React.Component {
 
     render() {
         return (
-            <Card className="books-card" title={this.props.title}>
-                <List
-                    dataSource={this.state.books}
-                    loading={this.state.loading}
-                    renderItem={book => <BookItem book={book} />}
-                />
-            </Card>
+            <List
+                className="search-results"
+                dataSource={this.state.books}
+                loading={this.state.loading}
+                renderItem={book => <BookItem book={book} />}
+            />
         )
     }
 }

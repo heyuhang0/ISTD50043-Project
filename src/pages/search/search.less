@@ -1,1 +1,24 @@
-@import '~antd/dist/antd.less'
+@import '~antd/dist/antd.less';
+
+#root {
+  min-height: 100vh;
+
+  .search-results-page {
+    min-height: 100vh;
+
+    .search-results-content {
+      background-color: white;
+      padding-left: 30px;
+      padding-right: 30px;
+  
+      .results-col {
+        max-width: @max-width * 0.6;
+        margin: 20px 0 20px 90px;
+
+        @media (max-width: 767px) {
+          margin-left: 0;
+        }
+      }
+    }
+  }
+}
