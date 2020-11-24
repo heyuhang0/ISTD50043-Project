@@ -1,20 +1,36 @@
 import React from 'react';
-import { Input, Button, Form } from 'antd';
+import { Input, Button, Form, message } from 'antd';
+import axios from 'axios';
 
 
 function LoginForm(props) {
+  function onLogin(form) {
+    axios.post('/api/users/login', form)
+      .then(res => {
+        props.onLogin(res.data.token);
+      })
+      .catch(error => {
+        console.error(error);
+        message.error(error.response ?
+          error.response.data.error_msg : "Unknown error");
+      });
+  }
   return (
     <Form
       {...props.layout}
-      onFinish={props.onFinish}
+      onFinish={onLogin}
     >
       <Form.Item
         name="email"
         rules={[
           {
             required: true,
-            message: 'Please input your email address!',
+            message: 'Please input your email address',
           },
+          {
+            type: "email",
+            message: 'Please input a valid email address',
+          }
         ]}
       >
         <Input placeholder="Email address" />
@@ -25,7 +41,7 @@ function LoginForm(props) {
         rules={[
           {
             required: true,
-            message: 'Please input your password!',
+            message: 'Please input your password',
           },
         ]}
       >

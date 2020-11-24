@@ -1,0 +1,87 @@
+@import "~antd/dist/antd.less";
+
+.sort-selector {
+  width: 160px;
+
+  .ant-select-arrow {
+    font-size: 150%;
+    transform: translate(-6px, -5px);
+    color: @text-color-secondary;
+  }
+}
+
+.search-results {
+  padding-top: 5px;
+  padding-bottom: 5px;
+
+  @cover-width: 120px;
+
+  .book-item {
+    .book-cover {
+      float: left;
+      width: @cover-width;
+      display: flex;
+      justify-content: center;
+      overflow: hidden;
+
+      img {
+        height: 5/3 * @cover-width;
+      }
+    }
+
+    .book-content {
+      margin-left: @cover-width + 15px;
+      .title h3 {
+        margin-bottom: 0;
+      }
+      .author {
+        margin-bottom: 5px;
+        color: @text-color-secondary;
+        font-size: 110%;
+        a {
+          color: @text-color-secondary;
+          &:hover {
+            color: @primary-color;
+          }
+        }
+      }
+      .ant-rate {
+        transform: scale(0.7);
+        margin-left: -20px;
+        margin-right: -12px;
+        color: @primary-color;
+      }
+      .rate-num {
+        color: @primary-color;
+      }
+      .rate-count {
+        color: @text-color-secondary;
+      }
+    }
+  }
+
+  @media (max-width: 575px) {
+    @cover-width: 80px;
+    .book-item {
+      .book-cover {
+        width: @cover-width;
+        img {
+          height: 5/3 * @cover-width;
+        }
+      }
+      .book-content {
+        margin-left: @cover-width + 15px;
+        .title h3 {
+          font-size: 90%;
+        }
+        .author {
+          font-size: 100%;
+        }
+      }
+    }
+  }
+
+  .ant-spin-container > .ant-list-items > .ant-list-item:last-child {
+    border-bottom: 0 !important;
+  }
+}

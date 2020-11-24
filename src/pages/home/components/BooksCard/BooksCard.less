@@ -4,15 +4,17 @@
   padding-top: 5px;
   padding-bottom: 5px;
 
-  @cover-width: 60px;
+  @cover-width: 80px;
 
   .book-item {
     .book-cover {
       float: left;
       width: @cover-width;
-      display: block;
+      display: flex;
+      justify-content: center;
+      overflow: hidden;
       img {
-        width: 100%;
+        height: 5/3 * @cover-width;
       }
     }
   

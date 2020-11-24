@@ -1,7 +1,16 @@
 import React, { Suspense, lazy } from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
+import axios from 'axios';
 import Loading from './components/Loading/Loading';
+
+axios.interceptors.request.use(function (config) {
+  const token = window.localStorage.token;
+  if (token) {
+    config.headers.Authorization = 'Bearer ' + token;
+  }
+  return config;
+});
 
 const Home = lazy(() => import('./pages/home/home'));
 const Search = lazy(() => import('./pages/search/search'));

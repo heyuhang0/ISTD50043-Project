@@ -24,3 +24,7 @@ yarn-error.log*
 
 # dev env
 /.vscode
+*.pyc
+
+# credentials & config
+.env

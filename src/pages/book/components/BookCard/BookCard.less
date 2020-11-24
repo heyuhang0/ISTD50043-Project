@@ -1,0 +1,84 @@
+@import '~antd/dist/antd.less';
+
+.book-card .ant-card-body {
+  padding-top: 20px;
+  padding-bottom: 20px;
+
+  @cover-width: 200px;
+
+  .book-cover {
+    float: left;
+    width: @cover-width;
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+    img {
+      height: 5/3 * @cover-width;
+    }
+  }
+  
+  .book-info {
+    margin-left: @cover-width + 20px;
+    .title {
+      margin-bottom: 0;
+      font-size: 200%;
+    }
+    .author {
+      margin-bottom: 5px;
+      color: @text-color-secondary;
+      font-size: 110%;
+      a {
+        color: @text-color-secondary;
+        &:hover {
+          color: @primary-color;
+        }
+      }
+    }
+    .ant-rate {
+      color: @primary-color;
+    }
+    .rate-num {
+      color: @primary-color;
+      font-size: 120%;
+      margin-left: 10px;
+    }
+    .rate-count {
+      color: @text-color-secondary;
+    }
+  }
+
+  @media (max-width: 575px) {
+    @cover-width: 120px;
+
+    .book-cover {
+      width: @cover-width;
+      img {
+        height: 5/3 * @cover-width;
+      }
+    }
+
+    .book-info {
+      margin-left: @cover-width + 20px;
+      .title {
+        font-size: 150%;
+      }
+    }
+  }
+
+  @media (max-width: 450px) {
+    .book-cover {
+      float: none;
+      width: 100%;
+      img {
+        height: 300px;
+      }
+    }
+
+    .book-info {
+      margin-left: 10px;
+      margin-right: 10px;
+    }
+  }
+}
+
+

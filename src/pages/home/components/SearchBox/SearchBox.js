@@ -18,11 +18,14 @@ class SearchBox extends React.Component {
 
   componentDidMount() {
     axios.get("/api/categories/suggested").then((res) => {
-      this.setState({ suggestions: res.data });
+      this.setState({ suggestions: res.data.category_list.filter(e => e) });
     });
   }
 
   onSearch(keyword) {
+    if (!keyword) {
+      return;
+    }
     this.props.history.push('/search?q=' + escape(keyword));
   }
 
@@ -30,7 +33,7 @@ class SearchBox extends React.Component {
     return (
       <div className="search-box">
         <Search
-          placeholder="Title / Author / Category"
+          placeholder="Title / Author / ASIN"
           allowClear
           enterButton
           size="large"
@@ -39,9 +42,9 @@ class SearchBox extends React.Component {
         <div className="search-box-suggestions">
           {this.state.suggestions.map(s => (
             <CheckableTag
-              key={s}
-              onChange={() => this.onSearch(s)}
-            >{s}</CheckableTag>
+              key={s._id}
+              onChange={() => this.onSearch('category: "' + s.category + '"')}
+            >{s.category}</CheckableTag>
           ))}
         </div>
       </div>

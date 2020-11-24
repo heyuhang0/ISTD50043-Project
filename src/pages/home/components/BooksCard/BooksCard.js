@@ -9,7 +9,9 @@ function BookItem(props) {
     <List.Item>
       <div className="book-item">
         <div className="book-cover">
-          <img src={props.book.imUrl} alt={props.book.title} />
+          <a className="title" href={"/book/" + escape(props.book.asin)}>
+            <img src={props.book.imUrl} alt={props.book.title} />
+          </a>
         </div>
         <div className="book-content">
           <a className="title" href={"/book/" + escape(props.book.asin)}>
@@ -21,9 +23,9 @@ function BookItem(props) {
           <Rate
             allowHalf
             disabled
-            defaultValue={props.book.rating}
+            defaultValue={props.book.rating_average}
           />
-          <span className="rate-num"> {props.book.rating}</span>
+          <span className="rate-num"> {props.book.rating_average.toFixed(1)}</span>
         </div>
       </div>
     </List.Item>
@@ -42,7 +44,7 @@ class BooksCard extends React.Component {
   componentDidMount() {
     axios.get(this.props.url).then((res) => {
       this.setState({
-        books: res.data,
+        books: res.data.books,
         loading: false
       });
     });

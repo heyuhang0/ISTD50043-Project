@@ -1,0 +1,40 @@
+@import '~antd/dist/antd.less';
+
+.global-header {
+  background-color: #ecdace;
+  height: fit-content;
+  padding: 0 24px;
+
+  @media (max-width: 575px) {
+    padding-left: 10px;
+    padding-right: 5px;
+  }
+
+  .text-logo {
+    float: left;
+    margin-top: 23px;
+    height: 30px;
+    content: url("./assets/logo-long.png");
+
+    @media (max-width: 575px) {
+      margin-top: 10px;
+      height: 40px;
+      content: url("./assets/logo-short.png");
+    }
+  }
+  .text-logo:hover {
+    cursor: pointer;
+  }
+
+  .search-box {
+    width: auto;
+    max-width: 500px;
+    margin: 15px 20px 15px 220px;
+    display: block;
+    box-shadow: 0 0 5px #0000000a;
+
+    @media (max-width: 575px) {
+      margin: 10px 5px 10px 50px;
+    }
+  }
+}

@@ -1,0 +1,32 @@
+@import '~antd/dist/antd.less';
+
+.user-review{
+  .ant-rate {
+    color: @primary-color;
+  }
+  
+  .user-review-item .ant-comment-inner {
+    margin-top: 12px;
+    margin-bottom: 12px;
+    padding: 0;
+  
+    .ant-comment-content-detail {
+      .ant-rate {
+        transform: scale(0.7);
+        margin-left: -20px;
+        margin-right: -12px;
+      }
+    
+      h3 {
+        display: inline;
+      }
+    }
+
+    .comment-likes {
+      padding-left: 8px;
+      padding-right: 8px;
+      cursor: "auto";
+    }
+  }
+  
+}
