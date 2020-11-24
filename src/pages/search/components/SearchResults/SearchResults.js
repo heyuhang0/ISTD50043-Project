@@ -1,7 +1,7 @@
 import React from 'react';
-import { Card, List, Rate } from 'antd';
+import { List, Rate } from 'antd';
 import axios from 'axios';
-import './BooksCard.less';
+import './SearchResults.less';
 
 
 function BookItem(props) {
@@ -45,7 +45,7 @@ class BooksCard extends React.Component {
     componentDidMount() {
         axios.get('/api/books/search', {
             params: {
-                keyword: this.props.url.split("=").pop(),
+                keyword: this.props.keyword,
                 limit: 0,
                 offset: 0
             }
