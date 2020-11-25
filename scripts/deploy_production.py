@@ -8,6 +8,7 @@ import queue
 import hashlib
 import subprocess
 import time
+import base64
 from pathlib import Path, PurePosixPath
 from typing import Any, Callable, Dict, List, Optional
 import boto3
@@ -329,10 +330,12 @@ class EC2Instance():
 
     def import_variable(self, **kvs: str):
         for name, value in kvs.items():
-            self.run_command(f'export {name}={value}')
+            encoded = base64.b64encode(value.encode('utf-8')).decode('ascii')
+            self.run_command(f'export {name}=$(echo {encoded} | base64 -d)')
 
     def export_variable(self, name: str) -> str:
-        value = self.run_command('echo $' + name)[-1]
+        encoded = self.run_command(f'echo -n ${name} | base64')[-1]
+        value = base64.decodestring(encoded.encode('ascii')).decode('utf-8')
         return value
 
 
