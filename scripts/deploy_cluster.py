@@ -1,5 +1,6 @@
 import argparse
 import logging
+import time
 from pathlib import Path, PurePosixPath
 from deploy_production import EC2Config, EC2KeyPair, EC2SSHConfig, EC2Instance
 from deploy_production import FutureValue, run_in_parallel
@@ -302,6 +303,10 @@ def launch(ssh_config: EC2SSHConfig, num_nodes: int):
 def scale(ssh_config: EC2SSHConfig, num_nodes: int):
     logger = logging.getLogger('scale')
     logger.info(f'Scaling cluster to {num_nodes} data nodes')
+
+    terminate(ssh_config)
+    time.sleep(10)
+    launch(ssh_config, num_nodes)
 
 
 def terminate(ssh_config: EC2SSHConfig):
