@@ -1,15 +1,13 @@
+import sys
+from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession
 from pyspark.ml.feature import CountVectorizer, IDF, Tokenizer
 from pyspark.sql.types import StructType, StructField, StringType
 from pyspark.mllib import *
 from pyspark.sql import SQLContext
 from pyspark.sql.functions import udf, col
-import findspark
-findspark.init()
-
-
-session = SparkSession.builder.appName("tfidf").getOrCreate()
-sc = session.sparkContext
+conf = SparkConf().setAppName("TFIDF Application")
+sc = SparkContext(conf=conf)
 
 # define the schema of the review table
 schema = StructType([
@@ -23,8 +21,8 @@ schema = StructType([
     StructField("createdAt", StringType(), True),
     StructField("updatedAt", StringType(), True)])
 
-reviews = session.read.csv(
-    "hdfs:///DBProject/review.csv", header=False, sep="\t", schema=schema)
+reviews = sc.read.csv(
+    "hdfs://com.example.name-node:9000/DBProject/review.csv", header=False, sep="\t", schema=schema)
 # drop the reviews with NA reviewText
 reviews = reviews.na.drop(subset=["reviewText"])
 
@@ -62,10 +60,10 @@ def save_as_string(vector):
 output = rescaledData.select('reviewerID', 'asin', 'createdAt', 'features').rdd.map(
     lambda x: [x[0], x[1], x[2], save_as_string(x[3])])
 
-print(output.take(2))
+# print(output.take(2))
 
-output_df = session.createDataFrame(
+output_df = sc.createDataFrame(
     output, ['reviewerID', 'asin', 'createdAt', 'tfidf'])
-output_df.write.format("csv").save("hdfs:///DBProject/tfidf_output")
+output_df.write.format("csv").save("hdfs://com.example.name-node:9000/DBProject/tfidf_output")
 
-session.stop()
+sc.stop()
