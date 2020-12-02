@@ -333,7 +333,7 @@ def terminate(ssh_config: EC2SSHConfig):
         name_node.terminate()
 
 
-def analyse(ssh_config: EC2SSHConfig):
+def analyse(ssh_config: EC2SSHConfig, debug: bool = False):
     logger = logging.getLogger('analyse')
     logger.info(f'Starting the ingestion and analytic tasks')
 
@@ -383,12 +383,18 @@ def analyse(ssh_config: EC2SSHConfig):
     name_node.import_variable(PYTHONHASHSEED='1')
     name_node.upload_file(project_base/'scripts'/'analytics'/'correlation.py', PurePosixPath('correlation.py'))
     name_node.run_command('/opt/hadoop-3.3.0/bin/hdfs dfs -rm -r -f /DBProject/correlation_output')
-    name_node.run_command('/opt/spark-3.0.1-bin-hadoop3.2/bin/spark-submit --master yarn --deploy-mode cluster correlation.py')
+    if debug:
+        name_node.run_command('python correlation.py')
+    else:
+        name_node.run_command('/opt/spark-3.0.1-bin-hadoop3.2/bin/spark-submit --master yarn --deploy-mode cluster correlation.py')
 
     # Run tf-idf
     name_node.upload_file(project_base/'scripts'/'analytics'/'tfidf.py', PurePosixPath('tfidf.py'))
     name_node.run_command('/opt/hadoop-3.3.0/bin/hdfs dfs -rm -r -f /DBProject/tfidf_output')
-    name_node.run_command('/opt/spark-3.0.1-bin-hadoop3.2/bin/spark-submit --master yarn --deploy-mode cluster tfidf.py')
+    if debug:
+        name_node.run_command('python tfidf.py')
+    else:
+        name_node.run_command('/opt/spark-3.0.1-bin-hadoop3.2/bin/spark-submit --master yarn --deploy-mode cluster tfidf.py')
 
     # Get results
     name_node.run_command('rm -rf correlation_output.txt')
@@ -406,6 +412,7 @@ def analyse(ssh_config: EC2SSHConfig):
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument('--debug', action='store_true')
     keypair_group = parser.add_mutually_exclusive_group(required=True)
     keypair_group.add_argument('--keyfile', type=EC2KeyPair.from_file)
     keypair_group.add_argument('--key', type=EC2KeyPair.from_str)
@@ -428,7 +435,7 @@ def main():
     elif args.action == 'terminate':
         terminate(ssh_config)
     elif args.action == 'analyse':
-        analyse(ssh_config)
+        analyse(ssh_config, args.debug)
 
 
 if __name__ == "__main__":
