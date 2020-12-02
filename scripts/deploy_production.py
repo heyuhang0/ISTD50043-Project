@@ -218,6 +218,8 @@ class EC2Instance():
             GroupId=security_group_id,
             IpPermissions=ip_permissions
         )
+        # There might be some consistency issue without sleep
+        time.sleep(5)
         return security_group_id
 
     def launch(self, config: EC2Config = None) -> None:
