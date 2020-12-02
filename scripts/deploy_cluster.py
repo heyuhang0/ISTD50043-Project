@@ -168,7 +168,7 @@ def launch(ssh_config: EC2SSHConfig, num_nodes: int):
 
         # Download and config Hadoop
         name_node.run_command('cd ~ && mkdir -p download && cd download')
-        name_node.run_command('wget -q -c https://apachemirror.sg.wuchna.com/hadoop/common/hadoop-3.3.0/hadoop-3.3.0.tar.gz')
+        name_node.run_command('wget -q -c https://istd50043-assets.s3-ap-southeast-1.amazonaws.com/hadoop-3.3.0.tar.gz')
         name_node.run_command('tar -zxf hadoop-3.3.0.tar.gz')
         name_node.import_variable(JH="\\/usr\\/lib\\/jvm\\/java-8-openjdk-amd64")
         name_node.run_command('sed -i "s/# export JAVA_HOME=.*/export\\ JAVA_HOME=${JH}/g" \\hadoop-3.3.0/etc/hadoop/hadoop-env.sh')
@@ -208,7 +208,7 @@ def launch(ssh_config: EC2SSHConfig, num_nodes: int):
         # Setup a Multi-node Spark cluster
         # Download
         name_node.run_command('cd ~/download')
-        name_node.run_command('wget -q -c https://apachemirror.sg.wuchna.com/spark/spark-3.0.1/spark-3.0.1-bin-hadoop3.2.tgz')
+        name_node.run_command('wget -q -c https://istd50043-assets.s3-ap-southeast-1.amazonaws.com/spark-3.0.1-bin-hadoop3.2.tgz')
         name_node.run_command('tar zxf spark-3.0.1-bin-hadoop3.2.tgz')
 
         # Configuration
