@@ -158,6 +158,7 @@ def launch(ssh_config: EC2SSHConfig, num_nodes: int):
             'source /etc/os-release'
             ' && echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu $VERSION_CODENAME/mongodb-org/4.4 multiverse"'
             ' | sudo tee /etc/apt/sources.list.d/mongodb-org-4.4.list')
+        name_node.run_command("echo 'debconf debconf/frontend select Noninteractive' | sudo debconf-set-selections")
         name_node.run_command('sudo apt update -qq -y')
         name_node.run_command('sudo apt install -qq -y openjdk-8-jdk python-is-python3 python3-pip mongodb-database-tools mysql-client-8.0 > /dev/null')
 
@@ -263,6 +264,7 @@ def launch(ssh_config: EC2SSHConfig, num_nodes: int):
             data_node.run_command('sudo sysctl vm.swappiness=10')
 
             # Install dependencies
+            data_node.run_command("echo 'debconf debconf/frontend select Noninteractive' | sudo debconf-set-selections")
             data_node.run_command('sudo apt update -qq -y')
             data_node.run_command('sudo apt install -qq -y openjdk-8-jdk python-is-python3 python3-pip > /dev/null')
 
