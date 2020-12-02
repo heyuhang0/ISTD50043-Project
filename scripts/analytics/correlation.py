@@ -1,13 +1,13 @@
-import sys
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import length
 from pyspark.sql.types import StructType, StructField, StringType
 from pyspark.mllib import *
-from pyspark.sql import SQLContext
 import math
+
+
+hdfs_dir = 'hdfs://com.example.name-node:9000/DBProject/'
 session = SparkSession.builder.appName("correlation").getOrCreate()
 sc = session.sparkContext
-
 
 schema = StructType([
     StructField("reviewId", StringType(), True),
@@ -20,8 +20,7 @@ schema = StructType([
     StructField("createdAt", StringType(), True),
     StructField("updatedAt", StringType(), True)])
 
-reviews_df = session.read.csv(
-    "hdfs://com.example.name-node:9000/DBProject/review.csv", header=False, sep="\t", schema=schema)
+reviews_df = session.read.csv(hdfs_dir + "review.csv", header=False, sep="\t", schema=schema)
 
 # select needed columns for computing correlation
 # get the length of each review
@@ -32,7 +31,7 @@ reviews = reviews.withColumn("reviewLength", length(reviews.reviewText))
 reviews_average = reviews.groupBy("asin").agg({'reviewLength': "mean"})
 
 # get the metadata from books.json
-books_df = session.read.json("hdfs://com.example.name-node:9000/books.json")
+books_df = session.read.json(hdfs_dir + "books.json")
 
 # drop those books with negative price values
 books_filtered = books_df.filter(books_df.price > 0)
@@ -42,14 +41,15 @@ books = books_filtered.select("asin", "price")
 combined_df = reviews_average.join(books, ["asin"])
 n = combined_df.count()
 
-flatdata = combined_df.rdd.map(list).flatMap(lambda book_row:
-                                             (("x", book_row[1]),
-                                              ("x_squared",
-                                               book_row[1] * book_row[1]),
-                                                 ("y", book_row[2]),
-                                                 ("y_squared",
-                                                  book_row[2] * book_row[2]),
-                                                 ("xy", book_row[1] * book_row[2])))
+flatdata = combined_df.rdd\
+    .map(list)\
+    .flatMap(lambda book_row: (
+        ("x", book_row[1]),
+        ("x_squared", book_row[1] * book_row[1]),
+        ("y", book_row[2]),
+        ("y_squared", book_row[2] * book_row[2]),
+        ("xy", book_row[1] * book_row[2])
+    ))
 
 # get the summation of the terms in flatdata
 reduced_data = flatdata.reduceByKey(lambda x, y: x+y)
@@ -61,11 +61,7 @@ y = reduced_data.lookup('y')[0]
 x = reduced_data.lookup('x')[0]
 
 # calculate correlation
-correlation = (n * xy - x*y) / math.sqrt(n * x_squared - x*x) / \
-    math.sqrt(n * y_squared - y*y)
-# correlation
+correlation = (n * xy - x*y) / math.sqrt(n * x_squared - x*x) / math.sqrt(n * y_squared - y*y)
 
-# output = sc.parallelize(['correlation', correlation])
-# output.coalesce(1, True).saveAsTextFile("hdfs:///DBProject/correlation_output")
-correlation.saveAsTextFile("hdfs://com.example.name-node:9000/output/correlation_output")
-sc.stop()
+output = sc.parallelize(['correlation', correlation])
+output.coalesce(1, True).saveAsTextFile(hdfs_dir + "correlation_output")
