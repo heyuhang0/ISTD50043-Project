@@ -230,7 +230,8 @@ def launch(ssh_config: EC2SSHConfig, num_nodes: int):
         name_node.run_command('sudo chown -R ${USER}:${USER} /opt/spark-3.0.1-bin-hadoop3.2')
 
         # Install PySpark
-        name_node.run_command('pip3 install numpy pyspark')
+        name_node.run_command('pip3 install pyspark')
+        name_node.run_command('sudo -H pip3 install numpy')
 
         # Start Hadoop
         for ready in data_nodes_hadoop_setup_ready:
@@ -289,7 +290,8 @@ def launch(ssh_config: EC2SSHConfig, num_nodes: int):
             data_node.run_command('sudo chown -R ${USER}:${USER} /opt/spark-3.0.1-bin-hadoop3.2')
 
             # Install PySpark
-            data_node.run_command('pip3 install numpy pyspark')
+            data_node.run_command('pip3 install pyspark')
+            data_node.run_command('sudo -H pip3 install numpy')
             data_nodes_spark_setup_ready[index].set(True)
 
         return do_launch_data_node
