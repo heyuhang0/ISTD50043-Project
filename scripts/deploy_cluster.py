@@ -385,6 +385,19 @@ def analyse(ssh_config: EC2SSHConfig):
     name_node.run_command('/opt/hadoop-3.3.0/bin/hdfs dfs -rm -r -f /DBProject/tfidf_output')
     name_node.run_command('/opt/spark-3.0.1-bin-hadoop3.2/bin/spark-submit --master yarn --deploy-mode cluster tfidf.py')
 
+    # Get results
+    name_node.run_command('rm -rf correlation_output.txt')
+    name_node.run_command('/opt/hadoop-3.3.0/bin/hdfs dfs -getmerge /DBProject/correlation_output correlation_output.txt')
+    name_node.run_command('rm -rf tfidf_output.csv')
+    name_node.run_command('/opt/hadoop-3.3.0/bin/hdfs dfs -getmerge /DBProject/tfidf_output tfidf_output.csv')
+
+    # Download results to local
+    local_outputs = Path('outputs')
+    if not local_outputs.exists():
+        local_outputs.mkdir()
+    name_node.download_file(PurePosixPath('correlation_output.txt'), local_outputs/'correlation.txt')
+    name_node.download_file(PurePosixPath('tfidf_output.csv'), local_outputs/'tfidf.csv')
+
 
 def main():
     parser = argparse.ArgumentParser()
