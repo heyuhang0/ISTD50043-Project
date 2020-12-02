@@ -278,12 +278,21 @@ class EC2Instance():
 
         self._logger.info('$ ' + command)
         session_file = '/tmp/ssh_seesion_' + self._session_id
-        _, stdout, stderr = self.ssh.exec_command(' ; '.join([
-            'touch ' + session_file,
-            'source ' + session_file,
-            'cd $PWD',
-            command + ' && export -p > ' + session_file
-        ]))
+
+        for _ in range(3):
+            try:
+                _, stdout, stderr = self.ssh.exec_command(' ; '.join([
+                    'touch ' + session_file,
+                    'source ' + session_file,
+                    'cd $PWD',
+                    command + ' && export -p > ' + session_file
+                ]))
+                break
+            except ConnectionResetError as e:
+                self._logger.warning(e)
+                self._ssh = None  # reset ssh
+        else:
+            raise EC2RuntimeException('An existing connection was forcibly closed by the remote host')
 
         stdout_lines = []
 
@@ -320,13 +329,24 @@ class EC2Instance():
         self.run_command(' && '.join(commands))
 
     def upload_file(self, local_path: Path, remote_path: PurePosixPath) -> None:
-        with self.ssh.open_sftp() as sftp:
-            self._logger.info(f'Uploading {str(local_path.absolute())} -> {str(remote_path)}')
-            sftp.put(localpath=str(local_path.absolute()), remotepath=str(remote_path))
+        try:
+            with self.ssh.open_sftp() as sftp:
+                self._logger.info(f'Uploading {str(local_path.absolute())} -> {str(remote_path)}')
+                sftp.put(localpath=str(local_path.absolute()), remotepath=str(remote_path))
+        except ConnectionResetError as e:
+            self._logger.warning(e)
+            self._ssh = None
+            self.upload_file(local_path, remote_path)
 
-    def download_file(self, remote_path: PurePosixPath, local_path: Path) -> None:
-        with self.ssh.open_sftp() as sftp:
-            sftp.get(remotepath=str(remote_path), localpath=str(local_path.absolute()))
+    def download_file(self, remote_path: PurePosixPath, local_path: Path) -> Path:
+        try:
+            with self.ssh.open_sftp() as sftp:
+                sftp.get(remotepath=str(remote_path), localpath=str(local_path.absolute()))
+                return local_path
+        except ConnectionResetError as e:
+            self._logger.warning(e)
+            self._ssh = None
+            return self.download_file(remote_path, local_path)
 
     def import_variable(self, **kvs: str):
         for name, value in kvs.items():
