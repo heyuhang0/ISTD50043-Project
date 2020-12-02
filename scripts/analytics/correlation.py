@@ -1,13 +1,13 @@
 import sys
-from pyspark import SparkContext, SparkConf
-# from pyspark.sql import SparkSession
+from pyspark.sql import SparkSession
 from pyspark.sql.functions import length
 from pyspark.sql.types import StructType, StructField, StringType
 from pyspark.mllib import *
 from pyspark.sql import SQLContext
 import math
-conf = SparkConf().setAppName("Correlation Application")
-sc = SparkContext(conf=conf)
+session = SparkSession.builder.appName("correlation").getOrCreate()
+sc = session.sparkContext
+
 
 schema = StructType([
     StructField("reviewId", StringType(), True),
@@ -20,7 +20,7 @@ schema = StructType([
     StructField("createdAt", StringType(), True),
     StructField("updatedAt", StringType(), True)])
 
-reviews_df = sc.read.csv(
+reviews_df = session.read.csv(
     "hdfs://com.example.name-node:9000/DBProject/review.csv", header=False, sep="\t", schema=schema)
 
 # select needed columns for computing correlation
@@ -32,7 +32,7 @@ reviews = reviews.withColumn("reviewLength", length(reviews.reviewText))
 reviews_average = reviews.groupBy("asin").agg({'reviewLength': "mean"})
 
 # get the metadata from books.json
-books_df = sc.read.json("hdfs://com.example.name-node:9000/books.json")
+books_df = session.read.json("hdfs://com.example.name-node:9000/books.json")
 
 # drop those books with negative price values
 books_filtered = books_df.filter(books_df.price > 0)
