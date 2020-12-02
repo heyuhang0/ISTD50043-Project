@@ -40,6 +40,7 @@ books = books_filtered.select("asin", "price")
 # join reviews and books by asin
 combined_df = reviews_average.join(books, ["asin"])
 n = combined_df.count()
+combined_df.show(1)
 
 flatdata = combined_df.rdd\
     .map(list)\
