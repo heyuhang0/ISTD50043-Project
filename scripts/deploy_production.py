@@ -8,6 +8,7 @@ import queue
 import hashlib
 import subprocess
 import time
+import uuid
 import base64
 from pathlib import Path, PurePosixPath
 from typing import Any, Callable, Dict, List, Optional
@@ -128,7 +129,7 @@ class EC2Instance():
 
         self._boto3_session = boto3.session.Session()
         self._ec2_client = self._boto3_session.client('ec2')
-        self._session_id = str(int(time.time()))
+        self._session_id = str(uuid.uuid4())
         self._logger = logger or logging.getLogger(self.__class__.__name__)
 
         self._ssh = None
