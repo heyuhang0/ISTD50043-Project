@@ -139,11 +139,20 @@ def launch(ssh_config: EC2SSHConfig, num_nodes: int):
                 instance_type='t2.xlarge')
             .with_storage(volume_size=32)
             .with_inbound_rule('tcp', 22)
-            .with_inbound_rule('-1', -1, '172.31.0.0/16'))
+            .with_inbound_rule('-1', -1, '172.31.0.0/16')
+            .with_user_data('\n'.join([
+                "#!/bin/bash",
+                "sysctl vm.swappiness=10",
+                "wget -qO - https://www.mongodb.org/static/pgp/server-4.4.asc | sudo apt-key add -",
+                'source /etc/os-release'
+                + ' && echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu'
+                + ' $VERSION_CODENAME/mongodb-org/4.4 multiverse"'
+                + ' | sudo tee /etc/apt/sources.list.d/mongodb-org-4.4.list',
+                "echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections",
+                "apt update -qq -y && apt install -qq -y "
+                + 'openjdk-8-jdk python-is-python3 python3-pip mongodb-database-tools mysql-client-8.0'
+            ])), wait_init=False)
         name_node_ip.set(name_node.private_ip)
-
-        # Change the Swappiness
-        name_node.run_command('sudo sysctl vm.swappiness=10')
 
         # Setup SSH keys
         name_node.run_command('[[ ! -f "$HOME/.ssh/id_rsa" ]] && ssh-keygen -t rsa -q -f "$HOME/.ssh/id_rsa" -N "" || true')
@@ -151,16 +160,6 @@ def launch(ssh_config: EC2SSHConfig, num_nodes: int):
         name_node_pubkey.set(name_node.export_variable('PUB_KEY'))
         name_node.import_variable(NAMENODE_PUB_KEY=name_node_pubkey.get())
         name_node.run_command('echo $NAMENODE_PUB_KEY | tee -a ~/.ssh/authorized_keys')
-
-        # Install dependencies
-        name_node.run_command('wget -qO - https://www.mongodb.org/static/pgp/server-4.4.asc | sudo apt-key add -')
-        name_node.run_command(
-            'source /etc/os-release'
-            ' && echo "deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu $VERSION_CODENAME/mongodb-org/4.4 multiverse"'
-            ' | sudo tee /etc/apt/sources.list.d/mongodb-org-4.4.list')
-        name_node.run_command("echo 'debconf debconf/frontend select Noninteractive' | sudo debconf-set-selections")
-        name_node.run_command('sudo apt update -qq -y')
-        name_node.run_command('sudo apt install -qq -y openjdk-8-jdk python-is-python3 python3-pip mongodb-database-tools mysql-client-8.0 > /dev/null')
 
         # Config Hosts
         name_node.import_variable(HOSTS=get_hosts())
@@ -231,6 +230,9 @@ def launch(ssh_config: EC2SSHConfig, num_nodes: int):
         name_node.run_command('sudo rm -rf /opt/spark-3.0.1-bin-hadoop3.2 && sudo mv spark-3.0.1-bin-hadoop3.2 /opt/')
         name_node.run_command('sudo chown -R ${USER}:${USER} /opt/spark-3.0.1-bin-hadoop3.2')
 
+        # Wait for cloud init and apt install in user data
+        name_node.wait_for_cloud_init()
+
         # Install PySpark
         name_node.run_command('pip3 install pyspark')
         name_node.run_command('sudo -H pip3 install numpy')
@@ -257,16 +259,15 @@ def launch(ssh_config: EC2SSHConfig, num_nodes: int):
                     instance_type='t2.xlarge')
                 .with_storage(volume_size=32)
                 .with_inbound_rule('tcp', 22)
-                .with_inbound_rule('-1', -1, '172.31.0.0/16'))
+                .with_inbound_rule('-1', -1, '172.31.0.0/16')
+                .with_user_data('\n'.join([
+                    "#!/bin/bash",
+                    "sysctl vm.swappiness=10",
+                    "echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections",
+                    "apt update -qq -y && apt install -qq -y "
+                    + 'openjdk-8-jdk python-is-python3 python3-pip'
+                ])), wait_init=False)
             data_node_ips[index].set(data_node.private_ip)
-
-            # Change the Swappiness
-            data_node.run_command('sudo sysctl vm.swappiness=10')
-
-            # Install dependencies
-            data_node.run_command("echo 'debconf debconf/frontend select Noninteractive' | sudo debconf-set-selections")
-            data_node.run_command('sudo apt update -qq -y')
-            data_node.run_command('sudo apt install -qq -y openjdk-8-jdk python-is-python3 python3-pip > /dev/null')
 
             # Config Hosts
             data_node.import_variable(HOSTS=get_hosts())
@@ -284,13 +285,16 @@ def launch(ssh_config: EC2SSHConfig, num_nodes: int):
 
             data_node.run_command('sudo mkdir -p /mnt/hadoop/datanode/')
             data_node.run_command('sudo chown -R ${USER}:${USER} /mnt/hadoop/datanode/')
-            data_nodes_hadoop_setup_ready[index].set(True)
 
             # Install Spark
             data_nodes_spark_build_ready[index].get()
             data_node.run_command('cd && tar zxf spark-3.0.1-bin-hadoop3.2.tgz')
             data_node.run_command('sudo rm -rf /opt/spark-3.0.1-bin-hadoop3.2 && sudo mv spark-3.0.1-bin-hadoop3.2 /opt/')
             data_node.run_command('sudo chown -R ${USER}:${USER} /opt/spark-3.0.1-bin-hadoop3.2')
+
+            # Wait for cloud init and apt install to finish
+            data_node.wait_for_cloud_init()
+            data_nodes_hadoop_setup_ready[index].set(True)
 
             # Install PySpark
             data_node.run_command('pip3 install pyspark')
