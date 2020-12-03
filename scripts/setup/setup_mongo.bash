@@ -68,7 +68,7 @@ systemctl restart mongod
 systemctl status mongod
 
 # Import data
-wget -q -c https://istd50043-assets.s3-ap-southeast-1.amazonaws.com/kindle_metadata_cleaned.zip
+wget -q -c https://d2bhhe2sy3r8ii.cloudfront.net/kindle_metadata_cleaned.zip
 unzip kindle_metadata_cleaned.zip
 for filename in ./combined_output/part-*; do
   echo "Importing $filename"
@@ -77,7 +77,7 @@ done
 rm -rf kindle_metadata_cleaned.zip
 rm -rf combined_output
 
-wget -q -c https://istd50043-assets.s3-ap-southeast-1.amazonaws.com/kindle_categories.json
+wget -q -c https://d2bhhe2sy3r8ii.cloudfront.net/kindle_categories.json
 mongoimport --quiet --collection categories $MONGO_LOCAL_URL kindle_categories.json
 rm -rf kindle_categories.json
 

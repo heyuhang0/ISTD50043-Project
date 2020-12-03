@@ -42,7 +42,7 @@ RUNSQL () {
 
 # Download kindle_reviews.csv
 echo "Downloading kindle_reviews.csv"
-wget -q -c https://istd50043.s3-ap-southeast-1.amazonaws.com/kindle-reviews.zip -O kindle-reviews.zip
+wget -q -c https://d2bhhe2sy3r8ii.cloudfront.net/kindle-reviews.zip -O kindle-reviews.zip
 unzip kindle-reviews.zip
 rm -rf kindle_reviews.json
 
