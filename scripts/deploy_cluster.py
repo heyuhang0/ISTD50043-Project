@@ -92,12 +92,13 @@ SPARK_ENV_SH = """
 export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 export HADOOP_HOME=/opt/hadoop-3.3.0
 export SPARK_HOME=/opt/spark-3.0.1-bin-hadoop3.2
-export SPARK_CONF_DIR=${SPARK_HOME}/conf
-export HADOOP_CONF_DIR=${HADOOP_HOME}/etc/hadoop
-export YARN_CONF_DIR=${HADOOP_HOME}/etc/hadoop
-export SPARK_EXECUTOR_CORES=1
-export SPARK_EXECUTOR_MEMORY=2G
-export SPARK_DRIVER_MEMORY=1G
+export SPARK_CONF_DIR=${{SPARK_HOME}}/conf
+export HADOOP_CONF_DIR=${{HADOOP_HOME}}/etc/hadoop
+export YARN_CONF_DIR=${{HADOOP_HOME}}/etc/hadoop
+export SPARK_EXECUTOR_INSTANCES={num_instances}
+export SPARK_EXECUTOR_CORES=4
+export SPARK_EXECUTOR_MEMORY=8G
+export SPARK_DRIVER_MEMORY=4G
 export PYSPARK_PYTHON=python3
 """
 
@@ -212,7 +213,7 @@ def launch(ssh_config: EC2SSHConfig, num_nodes: int):
 
         # Configuration
         name_node.run_command('cp spark-3.0.1-bin-hadoop3.2/conf/spark-env.sh.template spark-3.0.1-bin-hadoop3.2/conf/spark-env.sh')
-        name_node.import_variable(SPARK_ENV_SH=SPARK_ENV_SH)
+        name_node.import_variable(SPARK_ENV_SH=SPARK_ENV_SH.format(num_instances=num_nodes))
         name_node.run_command('echo -e "$SPARK_ENV_SH" >> spark-3.0.1-bin-hadoop3.2/conf/spark-env.sh')
 
         for host in data_node_hostnames:
