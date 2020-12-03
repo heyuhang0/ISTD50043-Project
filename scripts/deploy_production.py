@@ -32,7 +32,7 @@ class EC2Config():
         self.block_device_mappings = []
         self.image_id = image_id
         self.ip_permissions = []
-        self.setup_script = None
+        self.user_data = ''
 
     @staticmethod
     def get_latest_ubuntu_ami() -> str:
@@ -65,6 +65,10 @@ class EC2Config():
             'ToPort': port,
             'IpRanges': [{'CidrIp': ip_range}]
         })
+        return self
+
+    def with_user_data(self, user_data: str) -> EC2Config:
+        self.user_data = user_data
         return self
 
 
@@ -248,7 +252,8 @@ class EC2Instance():
                     }
                 ]
             }],
-            KeyName=self.ssh_config.keypair.key_name
+            KeyName=self.ssh_config.keypair.key_name,
+            UserData=config.user_data
         )
 
         while self.instance is None:
