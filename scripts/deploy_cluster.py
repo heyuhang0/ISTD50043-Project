@@ -1,5 +1,6 @@
 import argparse
 import logging
+import uuid
 import time
 from pathlib import Path, PurePosixPath
 from deploy_production import EC2Config, EC2KeyPair, EC2SSHConfig, EC2Instance
@@ -97,7 +98,7 @@ export HADOOP_CONF_DIR=${{HADOOP_HOME}}/etc/hadoop
 export YARN_CONF_DIR=${{HADOOP_HOME}}/etc/hadoop
 export SPARK_EXECUTOR_INSTANCES={num_instances}
 export SPARK_EXECUTOR_CORES=4
-export SPARK_EXECUTOR_MEMORY=8G
+export SPARK_EXECUTOR_MEMORY=6G
 export SPARK_DRIVER_MEMORY=4G
 export PYSPARK_PYTHON=python3
 """
@@ -115,10 +116,12 @@ def launch(ssh_config: EC2SSHConfig, num_nodes: int):
 
     name_node_hostname = hostname_template.format('name-node')
     name_node_ip = FutureValue()
+    name_node_public_ip = FutureValue()
     name_node_pubkey = FutureValue()
 
     data_node_hostnames = [hostname_template.format(f'data-node{i}') for i in range(num_nodes)]
     data_node_ips = [FutureValue() for _ in range(num_nodes)]
+    data_node_public_ips = [FutureValue() for _ in range(num_nodes)]
     data_nodes_ssh_ready = [FutureValue() for _ in range(num_nodes)]
     data_nodes_hadoop_build_ready = [FutureValue() for _ in range(num_nodes)]
     data_nodes_hadoop_setup_ready = [FutureValue() for _ in range(num_nodes)]
@@ -140,6 +143,7 @@ def launch(ssh_config: EC2SSHConfig, num_nodes: int):
                 instance_type='t2.xlarge')
             .with_storage(volume_size=32)
             .with_inbound_rule('tcp', 22)
+            .with_inbound_rule('tcp', 80)
             .with_inbound_rule('-1', -1, '172.31.0.0/16')
             .with_user_data('\n'.join([
                 "#!/bin/bash",
@@ -151,9 +155,10 @@ def launch(ssh_config: EC2SSHConfig, num_nodes: int):
                 + ' | sudo tee /etc/apt/sources.list.d/mongodb-org-4.4.list',
                 "echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections",
                 "apt update -qq -y && apt install -qq -y "
-                + 'openjdk-8-jdk python-is-python3 python3-pip mongodb-database-tools mysql-client-8.0'
+                + 'openjdk-8-jdk python-is-python3 python3-pip mongodb-database-tools mysql-client-8.0 apache2',
             ])), wait_init=False)
         name_node_ip.set(name_node.private_ip)
+        name_node_public_ip.set(name_node.public_ip)
 
         # Setup SSH keys
         name_node.run_command('[[ ! -f "$HOME/.ssh/id_rsa" ]] && ssh-keygen -t rsa -q -f "$HOME/.ssh/id_rsa" -N "" || true')
@@ -238,6 +243,11 @@ def launch(ssh_config: EC2SSHConfig, num_nodes: int):
         name_node.run_command('pip3 install pyspark')
         name_node.run_command('sudo -H pip3 install numpy')
 
+        # Config Apache2 (Used for download results)
+        name_node.run_command("sudo sed -i 's/Options Indexes/Options/g' /etc/apache2/apache2.conf")
+        name_node.run_command('sudo service apache2 restart')
+        name_node.run_command('sudo rm /var/www/html/index.html && sudo mkdir /var/www/html/results')
+
         # Start Hadoop
         for ready in data_nodes_hadoop_setup_ready:
             ready.get()
@@ -269,6 +279,7 @@ def launch(ssh_config: EC2SSHConfig, num_nodes: int):
                     + 'openjdk-8-jdk python-is-python3 python3-pip'
                 ])), wait_init=False)
             data_node_ips[index].set(data_node.private_ip)
+            data_node_public_ips[index].set(data_node.public_ip)
 
             # Config Hosts
             data_node.import_variable(HOSTS=get_hosts())
@@ -305,6 +316,12 @@ def launch(ssh_config: EC2SSHConfig, num_nodes: int):
         return do_launch_data_node
 
     run_in_parallel(launch_name_node, *[launch_data_node(i) for i in range(num_nodes)])
+
+    print('\n\x1b[6;30;42m' + 'Spark Cluster is Ready!' + '\x1b[0m')
+    print('\x1b[1;32;40m●\x1b[0m Spark Cluster')
+    print(f'{name_node_public_ip.get()}\t{name_node_hostname}')
+    for ip, hostname in zip(data_node_public_ips, data_node_hostnames):
+        print(f'{ip.get()}\t{hostname}')
 
 
 def scale(ssh_config: EC2SSHConfig, num_nodes: int):
@@ -346,75 +363,102 @@ def analyse(ssh_config: EC2SSHConfig, debug: bool = False):
 
     project_base = Path(__file__).absolute().parent.parent
 
-    # Get credentials
-    mongo_instance = EC2Instance('mongodb', ssh_config, logger)
-    if not mongo_instance.exists:
-        logger.error('Can not find MongoDB instance')
-        exit(1)
-    mongo_instance.run_command('source ~/.credentials')
-    db_name = mongo_instance.export_variable('MONGO_DB')
-    db_user = mongo_instance.export_variable('MONGO_USR')
-    db_pass = mongo_instance.export_variable('MONGO_PWD')
-    mongo_url = f'mongodb://{db_user}:{db_pass}@{mongo_instance.private_ip}:27017/{db_name}?authSource={db_name}'
+    reviews_ready = FutureValue()
+    tf_idf_result = FutureValue()
+    correlation_result = FutureValue()
 
-    mysql_instance = EC2Instance('mysql', ssh_config, logger)
-    if not mysql_instance.exists:
-        logger.error('Can not find MySQL instance')
-        exit(1)
-    mysql_instance.run_command('source ~/.credentials')
-    mysql_ip = mysql_instance.private_ip
-    mysql_database = mysql_instance.export_variable('MYSQL_DB')
+    def analyse_tf_idf():
+        # Get MySQL credentials
+        mysql_instance = EC2Instance('mysql', ssh_config, logger)
+        if not mysql_instance.exists:
+            raise Exception('Can not find MySQL instance')
+        mysql_instance.run_command('source ~/.credentials')
+        mysql_ip = mysql_instance.private_ip
+        mysql_database = mysql_instance.export_variable('MYSQL_DB')
     mysql_username = mysql_instance.export_variable('MYSQL_USR')
     mysql_password = mysql_instance.export_variable('MYSQL_PWD')
 
-    # Connect to cluster
-    name_node = EC2Instance('name-node', ssh_config, logger)
-    if not name_node.exists:
-        logger.error('Cluster not found')
-        exit(1)
+        # Connect to cluster
+        name_node = EC2Instance('name-node', ssh_config, logger)
+        if not name_node.exists:
+            raise Exception('Cluster not found')
 
-    # Download data
-    name_node.run_command(f'mongoexport --collection=books --out=books.json {mongo_url}')
-    name_node.import_variable(MYSQL_PWD=mysql_password)
-    name_node.run_command(
-        f'mysql -u {mysql_username} -h {mysql_ip}'
-        f' -e "select * from {mysql_database}.review" | tail -n +2 > review.csv')
+        # Export reviews data
+        name_node.import_variable(MYSQL_PWD=mysql_password)
+        name_node.run_command(
+            f'mysql -u {mysql_username} -h {mysql_ip}'
+            f' -e "select * from {mysql_database}.review" | tail -n +2 > review.csv')
 
-    # Put data to hdfs
-    name_node.run_command('/opt/hadoop-3.3.0/bin/hdfs dfs -rm -r -f /DBProject')
-    name_node.run_command('/opt/hadoop-3.3.0/bin/hdfs dfs -mkdir -p /DBProject')
-    name_node.run_command('/opt/hadoop-3.3.0/bin/hdfs dfs -put review.csv /DBProject/review.csv')
-    name_node.run_command('/opt/hadoop-3.3.0/bin/hdfs dfs -put books.json /DBProject/books.json')
+        # Put data to hdfs
+        name_node.run_command('/opt/hadoop-3.3.0/bin/hdfs dfs -mkdir -p /DBProject')
+        name_node.run_command('/opt/hadoop-3.3.0/bin/hdfs dfs -put -f review.csv /DBProject/review.csv')
+        reviews_ready.set(True)
 
-    # Run correlation
-    name_node.import_variable(PYTHONHASHSEED='1')
+        # Run tf-idf
+        name_node.upload_file(project_base/'scripts'/'analytics'/'tfidf.py', PurePosixPath('tfidf.py'))
+        name_node.run_command('/opt/hadoop-3.3.0/bin/hdfs dfs -rm -r -f /DBProject/tfidf_output')
+        if debug:
+            name_node.run_command('python tfidf.py')
+        else:
+            name_node.run_command('/opt/spark-3.0.1-bin-hadoop3.2/bin/spark-submit --master yarn --deploy-mode cluster tfidf.py')
+
+        # Get results
+        name_node.run_command('rm -rf tfidf_output.csv')
+        name_node.run_command('/opt/hadoop-3.3.0/bin/hdfs dfs -getmerge /DBProject/tfidf_output tfidf_output.csv')
+
+        # Move result to web folder
+        result_id = str(uuid.uuid4())
+        name_node.run_command('sudo rm -rf /var/www/html/results/*')
+        name_node.run_command(f'sudo mkdir -p /var/www/html/results/{result_id}')
+        name_node.run_command(f'sudo mv tfidf_output.csv /var/www/html/results/{result_id}')
+        tf_idf_result.set(f'http://{name_node.public_ip}/results/{result_id}/tfidf_output.csv')
+
+    def analyse_correlation():
+        # Get MongoDB credentials
+        mongo_instance = EC2Instance('mongodb', ssh_config, logger)
+        if not mongo_instance.exists:
+            logger.error('Can not find MongoDB instance')
+            exit(1)
+        mongo_instance.run_command('source ~/.credentials')
+        db_name = mongo_instance.export_variable('MONGO_DB')
+        db_user = mongo_instance.export_variable('MONGO_USR')
+        db_pass = mongo_instance.export_variable('MONGO_PWD')
+        mongo_url = f'mongodb://{db_user}:{db_pass}@{mongo_instance.private_ip}:27017/{db_name}?authSource={db_name}'
+
+        # Connect to cluster
+        name_node = EC2Instance('name-node', ssh_config, logger)
+        if not name_node.exists:
+            raise Exception('Cluster not found')
+
+        # Download books data
+        name_node.run_command(f'mongoexport --collection=books --out=books.json {mongo_url}')
+
+        # Put books data to hdfs
+        name_node.run_command('/opt/hadoop-3.3.0/bin/hdfs dfs -mkdir -p /DBProject')
+        name_node.run_command('/opt/hadoop-3.3.0/bin/hdfs dfs -put -f books.json /DBProject/books.json')
+
+        # Wait for reviews data to be ready
+        reviews_ready.get()
+
+        # Run correlation
+        name_node.import_variable(PYTHONHASHSEED='1')
     name_node.upload_file(project_base/'scripts'/'analytics'/'correlation.py', PurePosixPath('correlation.py'))
     name_node.run_command('/opt/hadoop-3.3.0/bin/hdfs dfs -rm -r -f /DBProject/correlation_output')
     if debug:
         name_node.run_command('python correlation.py')
-    else:
-        name_node.run_command('/opt/spark-3.0.1-bin-hadoop3.2/bin/spark-submit --master yarn --deploy-mode cluster correlation.py')
+        else:
+            name_node.run_command('/opt/spark-3.0.1-bin-hadoop3.2/bin/spark-submit --master yarn --deploy-mode cluster correlation.py')
 
-    # Run tf-idf
-    name_node.upload_file(project_base/'scripts'/'analytics'/'tfidf.py', PurePosixPath('tfidf.py'))
-    name_node.run_command('/opt/hadoop-3.3.0/bin/hdfs dfs -rm -r -f /DBProject/tfidf_output')
-    if debug:
-        name_node.run_command('python tfidf.py')
-    else:
-        name_node.run_command('/opt/spark-3.0.1-bin-hadoop3.2/bin/spark-submit --master yarn --deploy-mode cluster tfidf.py')
+        # Get results
+        name_node.run_command('rm -rf correlation_output.txt')
+        name_node.run_command('/opt/hadoop-3.3.0/bin/hdfs dfs -getmerge /DBProject/correlation_output correlation_output.txt')
+        correlation_result.set(name_node.export_variable('(tail -n 1 correlation_output.txt)'))
 
-    # Get results
-    name_node.run_command('rm -rf correlation_output.txt')
-    name_node.run_command('/opt/hadoop-3.3.0/bin/hdfs dfs -getmerge /DBProject/correlation_output correlation_output.txt')
-    name_node.run_command('rm -rf tfidf_output.csv')
-    name_node.run_command('/opt/hadoop-3.3.0/bin/hdfs dfs -getmerge /DBProject/tfidf_output tfidf_output.csv')
+    run_in_parallel(analyse_tf_idf, analyse_correlation)
 
-    # Download results to local
-    local_outputs = Path('outputs')
-    if not local_outputs.exists():
-        local_outputs.mkdir()
-    name_node.download_file(PurePosixPath('correlation_output.txt'), local_outputs/'correlation.txt')
-    name_node.download_file(PurePosixPath('tfidf_output.csv'), local_outputs/'tfidf.csv')
+    print('\n\x1b[6;30;42m' + 'Success!' + '\x1b[0m')
+    print('correlation:', correlation_result.get())
+    print('tf-idf:     ', tf_idf_result.get())
 
 
 def main():
