@@ -226,7 +226,15 @@ class EC2Instance():
         time.sleep(5)
         return security_group_id
 
-    def launch(self, config: EC2Config = None) -> None:
+    def wait_for_cloud_init(self) -> None:
+        self.run_command('; '.join([
+            "while [ ! -f /var/lib/cloud/instance/boot-finished ]",
+            "do echo 'Waiting for cloud-init...'",
+            "sleep 3",
+            "done"
+        ]))
+
+    def launch(self, config: EC2Config, wait_init: bool = True) -> None:
         if self.exists:
             raise self.AlreadyExistsException
 
@@ -258,16 +266,13 @@ class EC2Instance():
 
         while self.instance is None:
             self._logger.info('Waitting for the instance to be running...')
-            time.sleep(30)
+            time.sleep(10)
 
-        self._logger.info('Waitting for AWS cloud-init(about 30s) ...')
-        time.sleep(25)
-        self.run_command('; '.join([
-            "while [ ! -f /var/lib/cloud/instance/boot-finished ]",
-            "do echo 'Waiting for cloud-init...'",
-            "sleep 3",
-            "done"
-        ]))
+        self._logger.info('Waitting for ssh to be ready(about 30s)...')
+        time.sleep(30)
+
+        if wait_init:
+            self.wait_for_cloud_init()
 
     def terminate(self) -> None:
         if not self.exists:
