@@ -526,7 +526,7 @@ def main():
             instance.launch(
                 EC2Config(
                     image_id=EC2Config.get_latest_ubuntu_ami(),
-                    instance_type='t2.micro')
+                    instance_type='t2.medium')
                 .with_storage(volume_size=20)
                 .with_inbound_rule('tcp', 22)
                 .with_inbound_rule('tcp', 80)
