@@ -181,13 +181,12 @@ class EC2Instance():
         if not self.exists:
             raise self.NotExistsException
 
-        retries = 3
-        interval = 5
+        retries = 5
 
         self._ssh = paramiko.SSHClient()
         self._ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ip_address = self.public_ip
-        for _ in range(retries):
+        for try_count in range(retries):
             try:
                 self._logger.info(f'SSH into the instance {self.app_name}({ip_address})')
                 self._ssh.connect(
@@ -197,6 +196,7 @@ class EC2Instance():
                     pkey=self.ssh_config.keypair.priv_key)
                 return self._ssh
             except Exception as e:
+                interval = try_count * 5 + 5
                 self._logger.warning(e)
                 self._logger.info(f'Retrying in {interval} seconds...')
                 time.sleep(interval)
