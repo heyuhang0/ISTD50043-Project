@@ -455,20 +455,7 @@ def run_in_parallel(*tasks: Callable[[], Any]) -> None:
 
 
 # ================= Main Function =================
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '--override', action='store_true',
-        help='terminate existing instances before deploy')
-    keypair_group = parser.add_mutually_exclusive_group(required=True)
-    keypair_group.add_argument('--keyfile', type=EC2KeyPair.from_file)
-    keypair_group.add_argument('--key', type=EC2KeyPair.from_str)
-    keypair_group.add_argument('--newkey', type=EC2KeyPair.new, dest='new_key_path')
-    args = parser.parse_args()
-
-    keypair = args.keyfile or args.key or args.new_key_path
-    ssh_config = EC2SSHConfig(keypair, username='ubuntu', port=22)
-
+def launch(ssh_config: EC2SSHConfig, override: bool = False):
     project_base = Path(__file__).absolute().parent.parent
     project_archive = archive_git_dir(project_base, save_as=project_base/'archive.tar.gz')
 
@@ -479,7 +466,7 @@ def main():
         logger = logging.getLogger('@mongodb')
         instance = EC2Instance('mongodb', ssh_config, logger)
 
-        if args.override or not instance.exists:
+        if override or not instance.exists:
             if instance.exists:
                 logger.info('Terminating existing MongoDB instance')
                 instance.terminate()
@@ -518,7 +505,7 @@ def main():
         logger = logging.getLogger('@mysql')
         instance = EC2Instance('mysql', ssh_config, logger)
 
-        if args.override or not instance.exists:
+        if override or not instance.exists:
             if instance.exists:
                 logger.info('Terminating existing MySQL instance')
                 instance.terminate()
@@ -592,7 +579,7 @@ def main():
         logger = logging.getLogger('@web-app')
         instance = EC2Instance('web-app', ssh_config, logger)
 
-        if args.override or not instance.exists:
+        if override or not instance.exists:
             if instance.exists:
                 logger.info('Terminating existing WebApp instance')
                 instance.terminate()
@@ -681,6 +668,37 @@ def main():
     # Clean up
     os.remove(project_archive)
     os.remove(react_build.get())
+
+
+def terminate(ssh_config: EC2Config):
+    for name in ['mongodb', 'mysql', 'react-builder', 'web-app']:
+        instance = EC2Instance(name, ssh_config, logger)
+        if instance.exists:
+            logger.info(f'Terminating {name} instance')
+            instance.terminate()
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    keypair_group = parser.add_mutually_exclusive_group(required=True)
+    keypair_group.add_argument('--keyfile', type=EC2KeyPair.from_file)
+    keypair_group.add_argument('--key', type=EC2KeyPair.from_str)
+    keypair_group.add_argument('--newkey', type=EC2KeyPair.new, dest='new_key_path')
+    subparsers = parser.add_subparsers(dest='action')
+    launch_parser = subparsers.add_parser('launch')
+    launch_parser.add_argument(
+        '--override', action='store_true',
+        help='terminate existing instances before deploy')
+    subparsers.add_parser('terminate')
+    args = parser.parse_args()
+
+    keypair = args.keyfile or args.key or args.new_key_path
+    ssh_config = EC2SSHConfig(keypair, username='ubuntu', port=22)
+
+    if args.action is None or args.action == 'launch':
+        launch(ssh_config, hasattr(args, 'override'))
+    elif args.action == 'terminate':
+        terminate(ssh_config)
 
 
 if __name__ == "__main__":
