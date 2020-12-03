@@ -375,8 +375,8 @@ def analyse(ssh_config: EC2SSHConfig, debug: bool = False):
         mysql_instance.run_command('source ~/.credentials')
         mysql_ip = mysql_instance.private_ip
         mysql_database = mysql_instance.export_variable('MYSQL_DB')
-    mysql_username = mysql_instance.export_variable('MYSQL_USR')
-    mysql_password = mysql_instance.export_variable('MYSQL_PWD')
+        mysql_username = mysql_instance.export_variable('MYSQL_USR')
+        mysql_password = mysql_instance.export_variable('MYSQL_PWD')
 
         # Connect to cluster
         name_node = EC2Instance('name-node', ssh_config, logger)
@@ -442,10 +442,10 @@ def analyse(ssh_config: EC2SSHConfig, debug: bool = False):
 
         # Run correlation
         name_node.import_variable(PYTHONHASHSEED='1')
-    name_node.upload_file(project_base/'scripts'/'analytics'/'correlation.py', PurePosixPath('correlation.py'))
-    name_node.run_command('/opt/hadoop-3.3.0/bin/hdfs dfs -rm -r -f /DBProject/correlation_output')
-    if debug:
-        name_node.run_command('python correlation.py')
+        name_node.upload_file(project_base/'scripts'/'analytics'/'correlation.py', PurePosixPath('correlation.py'))
+        name_node.run_command('/opt/hadoop-3.3.0/bin/hdfs dfs -rm -r -f /DBProject/correlation_output')
+        if debug:
+            name_node.run_command('python correlation.py')
         else:
             name_node.run_command('/opt/spark-3.0.1-bin-hadoop3.2/bin/spark-submit --master yarn --deploy-mode cluster correlation.py')
 
