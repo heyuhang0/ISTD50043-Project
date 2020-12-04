@@ -21,12 +21,8 @@ fi
 echo "Installing python3.7"
 yes | sudo add-apt-repository ppa:deadsnakes/ppa
 sudo apt update
-sudo apt install -y python3.7
-alias python="python3.7"
-alias python3="python3"
-alias pip="python3.7 -m pip"
-alias pip3="pip"
+sudo apt install -y python3.7 python3-pip
 
 echo "Installing libraries: boto3 and paramiko"
-pip install --upgrade pip
-pip install boto3 paramiko
+python3.7 -m pip install --upgrade pip
+python3.7 -m pip install boto3 paramiko
