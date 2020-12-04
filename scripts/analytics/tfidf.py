@@ -47,15 +47,12 @@ rescaledData.show(1)
 vocab = model.vocabulary
 
 # reformat the tfidf
-
-
 def save_as_string(vector):
     words = ""
     for (i, tfidf) in zip(vector.indices, vector.values):
         temp = vocab[i] + ":" + str(float(tfidf)) + ", "
         words += temp
     return words[:-2]
-
 
 output = rescaledData.select('reviewId', 'features').rdd.map(
     lambda x: [x[0], save_as_string(x[1])])

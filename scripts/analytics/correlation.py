@@ -1,9 +1,7 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import length
 from pyspark.sql.types import StructType, StructField, StringType
-from pyspark.mllib import *
 import math
-
 
 hdfs_dir = 'hdfs://com.example.name-node:9000/DBProject/'
 session = SparkSession.builder.appName("correlation").getOrCreate()
@@ -42,6 +40,14 @@ combined_df = reviews_average.join(books, ["asin"])
 n = combined_df.count()
 combined_df.show(1)
 
+# map reviewLength and price to all components needed to calculate pearson correlation
+# structure after flatmap: 
+# [
+#    ("x", float), ("x_square", float), ("y", float), ("y_square", float), ("xy", float), 
+#    ("x", float), ("x_square", float), ("y", float), ("y_square", float), ("xy", float),
+#    ... ..., 
+#    ("x", float), ("x_square", float), ("y", float), ("y_square", float), ("xy", float)
+# ]
 flatdata = combined_df.rdd\
     .map(list)\
     .flatMap(lambda book_row: (
@@ -53,6 +59,7 @@ flatdata = combined_df.rdd\
     ))
 
 # get the summation of the terms in flatdata
+# structure after reduce: [("x", float), ("x_square", float), ("y", float), ("y_square", float), ("xy", float)]
 reduced_data = flatdata.reduceByKey(lambda x, y: x+y)
 
 y_squared = reduced_data.lookup('y_squared')[0]
