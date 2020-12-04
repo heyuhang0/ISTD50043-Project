@@ -368,7 +368,7 @@ class EC2Instance():
 
     def export_variable(self, name: str) -> str:
         encoded = ''.join(self.run_command(f'echo -n "${name}" | base64'))
-        value = base64.decodestring(encoded.encode('ascii')).decode('utf-8')
+        value = base64.decodebytes(encoded.encode('ascii')).decode('utf-8')
         return value
 
 
