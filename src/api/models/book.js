@@ -25,7 +25,7 @@ const BookSchema = new Schema({
     imUrl: String,
     description: {
         type: String,
-        required: [true, "'description' field required"]
+        default: ""
     },
     related: [String],
     rank: {

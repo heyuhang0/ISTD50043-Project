@@ -246,7 +246,7 @@ exports.book_details_get = async function (req, res) {
  */
 exports.book_create_post = async function (req, res) {
     //Check if necessary inputs are received
-    if (!req.body.title || !req.body.author || !req.body.price || !req.body.category || !req.body.description) {
+    if (!req.body.title || !req.body.author || !req.body.price || !req.body.category) {
         res.status(400).send(common_errors.MISSING_REQUIRED_PARAMS);
         return;
     }
