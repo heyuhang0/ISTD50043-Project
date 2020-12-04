@@ -1,4 +1,5 @@
 #!/bin/bash
+# this script is only designed for Ubuntu 16.04 (ami-04613ff1fdcd2eab1/ami-0f82752aa17ff8f5d)
 
 echo "Setting up AWS CLI"
 read -p 'AWS Access Key ID: ' access_key_id
@@ -17,9 +18,15 @@ then
     echo "aws_session_token=$session_token" >> ~/.aws/credentials
 fi
 
-echo "Installing pip"
+echo "Installing python3.7"
+yes | sudo add-apt-repository ppa:deadsnakes/ppa
 sudo apt update
-sudo apt install -y python3-pip
+sudo apt install -y python3.7
+alias python="python3.7"
+alias python3="python3"
+alias pip="python3.7 -m pip"
+alias pip3="pip"
 
 echo "Installing libraries: boto3 and paramiko"
-pip3 install boto3 paramiko
+pip install --upgrade pip
+pip install boto3 paramiko
