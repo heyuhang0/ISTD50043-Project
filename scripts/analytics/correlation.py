@@ -73,3 +73,5 @@ correlation = (n * xy - x*y) / math.sqrt(n * x_squared - x*x) / math.sqrt(n * y_
 
 output = sc.parallelize(['correlation', correlation])
 output.coalesce(1, True).saveAsTextFile(hdfs_dir + "correlation_output")
+
+session.stop()
