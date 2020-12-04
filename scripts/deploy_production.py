@@ -8,6 +8,8 @@ import queue
 import hashlib
 import subprocess
 import time
+import uuid
+import base64
 from pathlib import Path, PurePosixPath
 from typing import Any, Callable, Dict, List, Optional
 import boto3
@@ -31,7 +33,7 @@ class EC2Config():
         self.block_device_mappings = []
         self.image_id = image_id
         self.ip_permissions = []
-        self.setup_script = None
+        self.user_data = ''
 
     @staticmethod
     def get_latest_ubuntu_ami() -> str:
@@ -64,6 +66,10 @@ class EC2Config():
             'ToPort': port,
             'IpRanges': [{'CidrIp': ip_range}]
         })
+        return self
+
+    def with_user_data(self, user_data: str) -> EC2Config:
+        self.user_data = user_data
         return self
 
 
@@ -123,7 +129,7 @@ class EC2Instance():
 
         self._boto3_session = boto3.session.Session()
         self._ec2_client = self._boto3_session.client('ec2')
-        self._session_id = str(int(time.time()))
+        self._session_id = str(uuid.uuid4())
         self._logger = logger or logging.getLogger(self.__class__.__name__)
 
         self._ssh = None
@@ -176,13 +182,12 @@ class EC2Instance():
         if not self.exists:
             raise self.NotExistsException
 
-        retries = 3
-        interval = 5
+        retries = 5
 
         self._ssh = paramiko.SSHClient()
         self._ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ip_address = self.public_ip
-        for _ in range(retries):
+        for try_count in range(retries):
             try:
                 self._logger.info(f'SSH into the instance {self.app_name}({ip_address})')
                 self._ssh.connect(
@@ -192,6 +197,7 @@ class EC2Instance():
                     pkey=self.ssh_config.keypair.priv_key)
                 return self._ssh
             except Exception as e:
+                interval = try_count * 5 + 5
                 self._logger.warning(e)
                 self._logger.info(f'Retrying in {interval} seconds...')
                 time.sleep(interval)
@@ -217,9 +223,19 @@ class EC2Instance():
             GroupId=security_group_id,
             IpPermissions=ip_permissions
         )
+        # There might be some consistency issue without sleep
+        time.sleep(5)
         return security_group_id
 
-    def launch(self, config: EC2Config = None) -> None:
+    def wait_for_cloud_init(self) -> None:
+        self.run_command('; '.join([
+            "while [ ! -f /var/lib/cloud/instance/boot-finished ]",
+            "do echo 'Waiting for cloud-init...'",
+            "sleep 3",
+            "done"
+        ]))
+
+    def launch(self, config: EC2Config, wait_init: bool = True) -> None:
         if self.exists:
             raise self.AlreadyExistsException
 
@@ -245,21 +261,19 @@ class EC2Instance():
                     }
                 ]
             }],
-            KeyName=self.ssh_config.keypair.key_name
+            KeyName=self.ssh_config.keypair.key_name,
+            UserData=config.user_data
         )
 
         while self.instance is None:
             self._logger.info('Waitting for the instance to be running...')
-            time.sleep(30)
+            time.sleep(10)
 
-        self._logger.info('Waitting for AWS cloud-init(about 30s) ...')
-        time.sleep(25)
-        self.run_command('; '.join([
-            "while [ ! -f /var/lib/cloud/instance/boot-finished ]",
-            "do echo 'Waiting for cloud-init...'",
-            "sleep 3",
-            "done"
-        ]))
+        self._logger.info('Waitting for ssh to be ready(about 30s)...')
+        time.sleep(30)
+
+        if wait_init:
+            self.wait_for_cloud_init()
 
     def terminate(self) -> None:
         if not self.exists:
@@ -277,12 +291,21 @@ class EC2Instance():
 
         self._logger.info('$ ' + command)
         session_file = '/tmp/ssh_seesion_' + self._session_id
-        _, stdout, stderr = self.ssh.exec_command(' ; '.join([
-            'touch ' + session_file,
-            'source ' + session_file,
-            'cd $PWD',
-            command + ' && export -p > ' + session_file
-        ]))
+
+        for _ in range(3):
+            try:
+                _, stdout, stderr = self.ssh.exec_command(' ; '.join([
+                    'touch ' + session_file,
+                    'source ' + session_file,
+                    'cd $PWD',
+                    command + ' && export -p > ' + session_file
+                ]))
+                break
+            except ConnectionResetError as e:
+                self._logger.warning(e)
+                self._ssh = None  # reset ssh
+        else:
+            raise EC2RuntimeException('An existing connection was forcibly closed by the remote host')
 
         stdout_lines = []
 
@@ -319,20 +342,33 @@ class EC2Instance():
         self.run_command(' && '.join(commands))
 
     def upload_file(self, local_path: Path, remote_path: PurePosixPath) -> None:
-        with self.ssh.open_sftp() as sftp:
-            self._logger.info(f'Uploading {str(local_path.absolute())} -> {str(remote_path)}')
-            sftp.put(localpath=str(local_path.absolute()), remotepath=str(remote_path))
+        try:
+            with self.ssh.open_sftp() as sftp:
+                self._logger.info(f'Uploading {str(local_path.absolute())} -> {str(remote_path)}')
+                sftp.put(localpath=str(local_path.absolute()), remotepath=str(remote_path))
+        except ConnectionResetError as e:
+            self._logger.warning(e)
+            self._ssh = None
+            self.upload_file(local_path, remote_path)
 
-    def download_file(self, remote_path: PurePosixPath, local_path: Path) -> None:
-        with self.ssh.open_sftp() as sftp:
-            sftp.get(remotepath=str(remote_path), localpath=str(local_path.absolute()))
+    def download_file(self, remote_path: PurePosixPath, local_path: Path) -> Path:
+        try:
+            with self.ssh.open_sftp() as sftp:
+                sftp.get(remotepath=str(remote_path), localpath=str(local_path.absolute()))
+                return local_path
+        except ConnectionResetError as e:
+            self._logger.warning(e)
+            self._ssh = None
+            return self.download_file(remote_path, local_path)
 
     def import_variable(self, **kvs: str):
         for name, value in kvs.items():
-            self.run_command(f'export {name}={value}')
+            encoded = base64.b64encode(value.encode('utf-8')).decode('ascii')
+            self.run_command(f'export {name}=$(echo {encoded} | base64 -d)')
 
     def export_variable(self, name: str) -> str:
-        value = self.run_command('echo $' + name)[-1]
+        encoded = ''.join(self.run_command(f'echo -n "${name}" | base64'))
+        value = base64.decodestring(encoded.encode('ascii')).decode('utf-8')
         return value
 
 
@@ -411,28 +447,14 @@ def run_in_parallel(*tasks: Callable[[], Any]) -> None:
             # if due to exception, abort all tasks
             e = pending[i].exception()
             if e:
-                logger.error('Abort all tasks because of exception: ' + str(e))
-                exit(-1)
+                raise Exception('Abort all tasks because of exception: ' + str(e))
             # remove the finished task from pending
             pending.pop(i)
             break
 
 
 # ================= Main Function =================
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        '--override', action='store_true',
-        help='terminate existing instances before deploy')
-    keypair_group = parser.add_mutually_exclusive_group(required=True)
-    keypair_group.add_argument('--keyfile', type=EC2KeyPair.from_file)
-    keypair_group.add_argument('--key', type=EC2KeyPair.from_str)
-    keypair_group.add_argument('--newkey', type=EC2KeyPair.new, dest='new_key_path')
-    args = parser.parse_args()
-
-    keypair = args.keyfile or args.key or args.new_key_path
-    ssh_config = EC2SSHConfig(keypair, username='ubuntu', port=22)
-
+def launch(ssh_config: EC2SSHConfig, override: bool = False):
     project_base = Path(__file__).absolute().parent.parent
     project_archive = archive_git_dir(project_base, save_as=project_base/'archive.tar.gz')
 
@@ -443,7 +465,7 @@ def main():
         logger = logging.getLogger('@mongodb')
         instance = EC2Instance('mongodb', ssh_config, logger)
 
-        if args.override or not instance.exists:
+        if override or not instance.exists:
             if instance.exists:
                 logger.info('Terminating existing MongoDB instance')
                 instance.terminate()
@@ -482,7 +504,7 @@ def main():
         logger = logging.getLogger('@mysql')
         instance = EC2Instance('mysql', ssh_config, logger)
 
-        if args.override or not instance.exists:
+        if override or not instance.exists:
             if instance.exists:
                 logger.info('Terminating existing MySQL instance')
                 instance.terminate()
@@ -491,7 +513,7 @@ def main():
             instance.launch(
                 EC2Config(
                     image_id=EC2Config.get_latest_ubuntu_ami(),
-                    instance_type='t2.micro')
+                    instance_type='t2.medium')
                 .with_storage(volume_size=20)
                 .with_inbound_rule('tcp', 22)
                 .with_inbound_rule('tcp', 80)
@@ -556,7 +578,7 @@ def main():
         logger = logging.getLogger('@web-app')
         instance = EC2Instance('web-app', ssh_config, logger)
 
-        if args.override or not instance.exists:
+        if override or not instance.exists:
             if instance.exists:
                 logger.info('Terminating existing WebApp instance')
                 instance.terminate()
@@ -596,7 +618,7 @@ def main():
             'sudo cp -r build /var/www/html'
         ]))
 
-        logger.info('Launching back-end service')
+        logger.info('Launching back-end service (waiting for database to be ready)')
         instance.run_command(' && '.join([
             'cd app',
             'rm -f .env',
@@ -645,6 +667,37 @@ def main():
     # Clean up
     os.remove(project_archive)
     os.remove(react_build.get())
+
+
+def terminate(ssh_config: EC2SSHConfig):
+    for name in ['mongodb', 'mysql', 'react-builder', 'web-app']:
+        instance = EC2Instance(name, ssh_config, logger)
+        if instance.exists:
+            logger.info(f'Terminating {name} instance')
+            instance.terminate()
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    keypair_group = parser.add_mutually_exclusive_group(required=True)
+    keypair_group.add_argument('--keyfile', type=EC2KeyPair.from_file)
+    keypair_group.add_argument('--key', type=EC2KeyPair.from_str)
+    keypair_group.add_argument('--newkey', type=EC2KeyPair.new, dest='new_key_path')
+    subparsers = parser.add_subparsers(dest='action')
+    launch_parser = subparsers.add_parser('launch')
+    launch_parser.add_argument(
+        '--override', action='store_true',
+        help='terminate existing instances before deploy')
+    subparsers.add_parser('terminate')
+    args = parser.parse_args()
+
+    keypair = args.keyfile or args.key or args.new_key_path
+    ssh_config = EC2SSHConfig(keypair, username='ubuntu', port=22)
+
+    if args.action is None or args.action == 'launch':
+        launch(ssh_config, hasattr(args, 'override'))
+    elif args.action == 'terminate':
+        terminate(ssh_config)
 
 
 if __name__ == "__main__":
