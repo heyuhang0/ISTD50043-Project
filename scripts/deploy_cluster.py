@@ -329,7 +329,9 @@ def scale(ssh_config: EC2SSHConfig, num_nodes: int):
     logger.info(f'Scaling cluster to {num_nodes} data nodes')
 
     terminate(ssh_config)
-    time.sleep(10)
+    logger.info('Waitting for instances to be really terminated')
+    time.sleep(45)
+    logger.info('Launching new cluster')
     launch(ssh_config, num_nodes)
 
 
