@@ -245,22 +245,6 @@ exports.book_details_get = async function (req, res) {
  * {success: 0, err_type: Number, err_msg: String} (Enum in common_error or book_error)
  */
 exports.book_create_post = async function (req, res) {
-    let token = req.headers.authorization;
-     // check user is logged in
-     if (!token || !token.startsWith("Bearer ")) {
-        res.status(401).send(common_errors.AUTHENTICATION_ERROR);
-        return;
-    };
-
-    // check user is logged in
-    token = token.substring(7, token.length);
-    try {
-        jwt.verify(token, authentication_secret);
-    } catch (err) {
-        res.status(401).send(common_errors.AUTHENTICATION_ERROR);
-        return;
-    };
-
     //Check if necessary inputs are received
     if (!req.body.title || !req.body.author || !req.body.price || !req.body.category || !req.body.description) {
         res.status(400).send(common_errors.MISSING_REQUIRED_PARAMS);
