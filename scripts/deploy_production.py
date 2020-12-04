@@ -447,8 +447,7 @@ def run_in_parallel(*tasks: Callable[[], Any]) -> None:
             # if due to exception, abort all tasks
             e = pending[i].exception()
             if e:
-                logger.error('Abort all tasks because of exception: ' + str(e))
-                exit(-1)
+                raise Exception('Abort all tasks because of exception: ' + str(e))
             # remove the finished task from pending
             pending.pop(i)
             break
@@ -619,7 +618,7 @@ def launch(ssh_config: EC2SSHConfig, override: bool = False):
             'sudo cp -r build /var/www/html'
         ]))
 
-        logger.info('Launching back-end service')
+        logger.info('Launching back-end service (waiting for database to be ready)')
         instance.run_command(' && '.join([
             'cd app',
             'rm -f .env',
@@ -670,7 +669,7 @@ def launch(ssh_config: EC2SSHConfig, override: bool = False):
     os.remove(react_build.get())
 
 
-def terminate(ssh_config: EC2Config):
+def terminate(ssh_config: EC2SSHConfig):
     for name in ['mongodb', 'mysql', 'react-builder', 'web-app']:
         instance = EC2Instance(name, ssh_config, logger)
         if instance.exists:
