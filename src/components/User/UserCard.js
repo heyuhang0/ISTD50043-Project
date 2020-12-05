@@ -38,6 +38,9 @@ class UserCard extends React.Component {
   onLogin = (token) => {
     window.localStorage.token = token;
     this.reloadToken();
+    if (this.props.onSuccessCallBack) {
+      this.props.onSuccessCallBack();
+    }
   }
 
   onSignOut = () => {

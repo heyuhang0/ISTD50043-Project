@@ -1,6 +1,11 @@
 @import '~antd/dist/antd.less';
 
 .user-review{
+  .login-button {
+    color: @primary-color;
+    cursor: pointer;
+  }
+
   .ant-rate {
     color: @primary-color;
   }
@@ -29,4 +34,10 @@
     }
   }
   
+}
+
+.user-login-modal {
+  .ant-modal-body {
+    padding: 0 !important;
+  }
 }
