@@ -402,7 +402,7 @@ def analyse(ssh_config: EC2SSHConfig, debug: bool = False):
         if debug:
             name_node.run_command('python tfidf.py')
         else:
-            name_node.run_command('/opt/spark-3.0.1-bin-hadoop3.2/bin/spark-submit --master yarn --deploy-mode cluster tfidf.py')
+            name_node.run_command('/opt/spark-3.0.1-bin-hadoop3.2/bin/spark-submit --master yarn tfidf.py')
 
         # Get results
         name_node.run_command('rm -rf tfidf_output.csv')
@@ -449,7 +449,7 @@ def analyse(ssh_config: EC2SSHConfig, debug: bool = False):
         if debug:
             name_node.run_command('python correlation.py')
         else:
-            name_node.run_command('/opt/spark-3.0.1-bin-hadoop3.2/bin/spark-submit --master yarn --deploy-mode cluster correlation.py')
+            name_node.run_command('/opt/spark-3.0.1-bin-hadoop3.2/bin/spark-submit --master yarn correlation.py')
 
         # Get results
         name_node.run_command('rm -rf correlation_output.txt')
