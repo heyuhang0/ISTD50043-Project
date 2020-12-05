@@ -1,7 +1,8 @@
-import React from 'react';
-import { Comment, Form, Button, Input, Rate, Typography } from 'antd';
+import React, { useState } from 'react';
+import { Comment, Form, Button, Input, Rate, Typography, Modal } from 'antd';
 import { LikeOutlined } from '@ant-design/icons';
 import axios from 'axios';
+import UserCard from '../../../../components/User/UserCard';
 import UserAvatar from '../UserAvatar/UserAvatar';
 import './AddReview.less';
 
@@ -9,6 +10,40 @@ const { TextArea } = Input;
 const { Paragraph } = Typography;
 
 const Editor = ({ onSubmit, submitting, initialValues }) => {
+  const [loggedIn, setLoggedIn] = useState(!!window.localStorage.token);
+  const [loginVisible, setLoginVisible] = useState(false);
+
+  const onLogin = () => {
+    if (window.localStorage.token) {
+      setLoggedIn(true);
+      return;
+    }
+    setLoginVisible(true);
+  }
+
+  const onLoginCancel = () => {
+    setLoginVisible(false);
+  }
+
+  const onLoginSuccess = () => {
+    window.location.reload();
+  }
+
+  if (!loggedIn) {
+    return (
+      <div>
+        <p>Please <span className="login-button" onClick={onLogin}>login</span> to write a review.</p>
+        <Modal
+          className="user-login-modal"
+          visible={loginVisible}
+          onCancel={onLoginCancel}
+          footer={null}
+        >
+          <UserCard onSuccessCallBack={onLoginSuccess}/>
+        </Modal>
+      </div>
+    );
+  }
   return (
     <Form
       onFinish={onSubmit}
