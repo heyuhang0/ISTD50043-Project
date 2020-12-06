@@ -1,68 +1,30 @@
-# Getting Started with Create React App
+# 50043 Book Review Website
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).\
+Live Demo Link: http://18.141.203.154/\
+This README only documents how to run web server locally, and reploy and run in AWS.\
+See **`documentation.pdf`** file for **full running instruction and full documentation.**
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+# Running Production Web Server Locally
+
+`.env`, `MySQL` and `MongoDB` should be seted up before run production web server.
 ## Available Scripts
 
 In the project directory, you can run:
 
 ### `npm start`
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+Runs the app in the development mode. Open [http://localhost:3000](http://localhost:3000) to view it in the browser.\
+The page will reload if you make edits. You will also see any lint errors in the console.
 
 ### `npm run build`
 
 Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
+It correctly bundles React in production mode and optimizes the build for the best performance.\
+The build is minified and the filenames include the hashes.Your app is ready to be deployed!\
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
-
-
-# Run Instruction
-
-Live Demo Link: http://18.141.203.154/
+# Deploy and Run in AWS
   - Start a new instance using <span style="color:red">ami-04613ff1fdcd2eab1</span> (or <span style="color:red">ami-0f82752aa17ff8f5d</span> for us-east-1 region)
   - SSH into the new instance
   - Git clone the project (**You must CLONE it instead of downloading ZIP**) by:
@@ -73,9 +35,9 @@ Live Demo Link: http://18.141.203.154/
   
 ##  Setup the deploy environment 
 - The script will prompt you to input your aws credentials and will then install the necessary dependencies. This is not the actual deploy script, and the script is only designed for <span style="color:red">ami-04613ff1fdcd2eab1/ami-0f82752aa17ff8f5d</span> based on the dependencies that should be installed on these 2 amis.
-
-	 `$ ./scripts/setup_deployer.bash`
-
+	```
+	$ ./scripts/setup_deployer.bash
+	```
 - Now you are ready to launch the system (please use **python3.7** instead of python3):
 	```
 	# The script will deploy production (about 5-8 minutes) and cluster
@@ -83,7 +45,7 @@ Live Demo Link: http://18.141.203.154/
 	already exists one.
 	
   # OPTION1
-	#If you do not have a pem key
+	# If you do not have a pem key
 	# you can launch with a new key (keyname must be unique, i.e., <keyname>.pem
 	# must not exists in ec2s keypairs)
 	# the pem file of the new keypair will be saved at the given path  
@@ -134,3 +96,4 @@ Live Demo Link: http://18.141.203.154/
   
 
 In addition, **please avoid launching another system immediately after destroying one, wait 30 seconds before doing so**. This may cause the vCPU exceed limit error, due to previous instances not fully terminated yet. In this case, wait 30 second, then destroy the cluster, then wait for another 30 seconds, launch the cluster again, the error should be resolved.
+
