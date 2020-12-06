@@ -1,6 +1,6 @@
 # 50043 Book Review Website
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).\
-Live Demo Link: http://18.141.203.154/\
+Live Demo Link: http://18.141.203.154/ \
 This README only documents how to run web server locally, and reploy and run in AWS.\
 See **`documentation.pdf`** file for **full running instruction and full documentation.**
 
